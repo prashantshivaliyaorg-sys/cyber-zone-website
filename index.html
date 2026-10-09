@@ -99,7 +99,7 @@ body.cz-authenticated .app{display:grid!important}
   <label style="display:block;font-size:13px;margin-bottom:6px">Login Role</label>
   <select id="loginRole" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px"><option value="Management">Management</option><option value="Staff">Staff</option></select>
   <label style="display:block;font-size:13px;margin-bottom:6px">User ID / Mobile Number</label>
-  <input id="loginId" autocomplete="off" placeholder="Enter your ID or mobile number" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px">
+  <input id="loginId" autocomplete="off" placeholder="Enter your Management/Staff email" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px">
   <label style="display:block;font-size:13px;margin-bottom:6px">Password</label>
   <input id="loginPassword" type="password" autocomplete="new-password" placeholder="Enter your password" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px">
   <button type="button" id="loginBtn" style="width:100%;padding:12px;border:0;border-radius:8px;background:#175cd3;color:white;font-weight:700">Login </button>
@@ -211,64 +211,48 @@ body.cz-authenticated .app{display:grid!important}
   <footer class="muted" style="font-size:12px;padding:10px 2px">Cyber Zone Management · Starter website ·   Backup </footer>
 </main>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+// Supabase project configuration. Publishable keys are intended for browser use; RLS policies protect all data.
+const SUPABASE_URL = "https://knojmxcyjfnizznpcetf.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_tyTLamKh8j7d2Vnu7swzbw_EyhkgugN";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const CZ_MANAGEMENT_UID = "6d7a47f3-d047-44a8-9e12-3daa7dedeb3c";
+let czCloudReady = false;
+const CZ_STATE_KEYS = ["works", "money", "staff", "settings", "requests"];
 const $=id=>document.getElementById(id);
 
 
-// Local demo authentication. Credentials are stored in this browser only.
-$('loginBtn').addEventListener('click',()=>{
- const uid=String($('loginId')?.value||'').trim();
+// Supabase Authentication. Each account must be provisioned in Supabase Auth and assigned a row in public.cz_org_members.
+$('loginBtn').addEventListener('click', async ()=>{
+ const email=String($('loginId')?.value||'').trim().toLowerCase();
  const password=String($('loginPassword')?.value||'');
- const role=String($('loginRole')?.value||'Management');
+ const selectedRole=String($('loginRole')?.value||'Management');
  const err=$('loginError'); if(err)err.textContent='';
- if(!uid||!password){if(err)err.textContent='Please enter your User ID and Password.';return;}
- if(role==='Management'){
-   const saved=localStorage.getItem('cz_admin_password')||'CZadmin@123';
-   if(!(['7818942933','prashantshivaliya'].includes(uid.toLowerCase()))||password!==saved){
-     if(err)err.textContent='Management ID or Password is incorrect. Demo ID: 7818942933.';
-     return;
-   }
- } else {
-   const people=Array.isArray(staff)?staff:load('staff',[]);
-   const person=people.find(x=>String(x.phone||'').trim()===uid||String(x.id||'').trim()===uid||String(x.userId||'').trim()===uid);
-   const saved=person&&(String(person.password||'')||String((load('staffPasswords',{})||{})[person.id]||''));
-   if(!person||!saved||password!==saved){
-     if(err)err.textContent='Staff ID/Password is incorrect. Use the staff mobile/ID and the password saved in Staff Management.';
-     return;
-   }
- }
- try{localStorage.setItem('cz_logged_role',role);localStorage.setItem('cz_logged_user',uid);}catch(e){}
- document.body.classList.add('cz-authenticated');
- const gate=$('loginScreen'),pub=$('publicServicePage'),app=document.querySelector('.app');
- if(gate)gate.style.display='none';if(pub)pub.style.display='none';if(app){app.classList.remove('hidden');app.style.display='grid';}applyRoleView();refresh();
+ if(!email||!password){if(err)err.textContent='Please enter your email and password.';return;}
+ if(err)err.textContent='Connecting securely…';
+ try {
+   const {data:authData,error:authError}=await supabaseClient.auth.signInWithPassword({email,password});
+   if(authError) throw authError;
+   const user=authData.user;
+   const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members').select('role,owner_id,active').eq('user_id',user.id).maybeSingle();
+   if(memberError) throw memberError;
+   if(!membership || membership.active===false) { await supabaseClient.auth.signOut(); throw new Error('This account has not been enabled by Management.'); }
+   const actualRole=membership.role==='management'?'Management':'Staff';
+   if(actualRole!==selectedRole){await supabaseClient.auth.signOut();throw new Error('Please choose the correct login type: '+actualRole+'.');}
+   localStorage.setItem('cz_logged_role',actualRole); localStorage.setItem('cz_logged_user',user.email||email);
+   document.body.classList.add('cz-authenticated');
+   const gate=$('loginScreen'),pub=$('publicServicePage'),app=document.querySelector('.app');
+   if(gate)gate.style.display='none'; if(pub)pub.style.display='none'; if(app){app.classList.remove('hidden');app.style.display='grid';}
+   await czCloudLoad(membership.owner_id);
+   applyRoleView(); refresh(); if(err)err.textContent='';
+ } catch(e) { if(err)err.textContent='Login failed: '+(e.message||'Please check your email, password, and Management access setup.'); }
 });
 $('forgotPasswordOpen').addEventListener('click',()=>{
  const box=$('forgotBox');if(box)box.style.display=box.style.display==='none'?'block':'none';
 });
 $('resetPasswordBtn').addEventListener('click',()=>{
- const phone=String($('resetPhone')?.value||'').trim();
- const code=String($('resetCode')?.value||'').trim();
- const pw=String($('resetNewPassword')?.value||'');
- const msg=$('resetMessage');
- const setMsg=(ok,text)=>{if(msg){msg.style.color=ok?'#067647':'#b42318';msg.textContent=text;}};
- if(pw.length<8){setMsg(false,'Password must contain at least 8 characters.');return;}
- // Enter recovery code; for a real public website use server-side OTP verification.
- if(code!=='CZ-RECOVER-2933'){setMsg(false,'Recovery Code is incorrect. Enter recovery code: CZ-RECOVER-2933.');return;}
- if(phone==='7818942933'){
-   localStorage.setItem('cz_admin_password',pw);
-   $('loginRole').value='Management';$('loginId').value=phone;
-   setMsg(true,'Management password reset successfully. You can log in with the new password.');
-   $('loginPassword').value='';return;
- }
- const people=Array.isArray(staff)?staff:load('staff',[]);
- const person=people.find(x=>String(x.phone||'').trim()===phone);
- if(!person){setMsg(false,'No staff account found for this mobile number.');return;}
- person.password=pw;
- save('staff',people);
- staff=people;
- $('loginRole').value='Staff';$('loginId').value=phone;
- setMsg(true,'Staff password reset successfully. Log in with this mobile number and your new password.');
- $('loginPassword').value='';
+ const msg=$('resetMessage'); if(msg){msg.style.color='#b42318';msg.textContent='Password recovery is handled by Supabase Auth. Use the registered email and the secure password-reset flow configured by Management.';}
 });
 $('publicRegistrationOpen').addEventListener('click',()=>{document.body.classList.remove('cz-authenticated');const app=document.querySelector('.app');if(app)app.style.display='none';$('loginScreen').style.display='none';$('publicServicePage').style.display='block';});
 // Demo-only OTP login. Replace with server-verified SMS OTP before production use.
@@ -283,12 +267,26 @@ function verifyDemoOTP(){
  if($('otpInput').value.trim()!==demoOtp||!demoOtp){alert('OTP   Demo OTP 246810 ');return}
  localStorage.setItem('cz_demo_logged_in','1');$('loginGate').classList.add('hidden');
 }
-function logoutDemo(){document.body.classList.remove('cz-authenticated');try{localStorage.removeItem('cz_logged_role');localStorage.removeItem('cz_logged_user');localStorage.removeItem('cz_demo_logged_in');}catch(e){}const app=document.querySelector('.app'),gate=$('loginScreen'),pub=$('publicServicePage');if(app){app.style.display='none';app.classList.add('hidden');}if(gate){gate.style.display='flex';}if(pub){pub.style.display='none';}if($('loginPassword'))$('loginPassword').value='';if($('loginError'))$('loginError').textContent='You have been logged out.';}
+async function logoutDemo(){try{await supabaseClient.auth.signOut();}catch(e){}document.body.classList.remove('cz-authenticated');try{localStorage.removeItem('cz_logged_role');localStorage.removeItem('cz_logged_user');localStorage.removeItem('cz_demo_logged_in');}catch(e){}const app=document.querySelector('.app'),gate=$('loginScreen'),pub=$('publicServicePage');if(app){app.style.display='none';app.classList.add('hidden');}if(gate){gate.style.display='flex';}if(pub){pub.style.display='none';}if($('loginPassword'))$('loginPassword').value='';if($('loginError'))$('loginError').textContent='You have been logged out.';}
 
 const today=()=>new Date().toLocaleDateString('en-CA');
 const load=(k,d)=>{try{return JSON.parse(localStorage.getItem('cz_'+k))??d}catch{return d}};
-const save=(k,v)=>localStorage.setItem('cz_'+k,JSON.stringify(v));
+const save=(k,v)=>{localStorage.setItem('cz_'+k,JSON.stringify(v)); if(czCloudReady && CZ_STATE_KEYS.includes(k)) czCloudSave(k,v).catch(e=>console.error('Cloud save failed',e));};
 let works=load('works',[]), money=load('money',[]), staff=load('staff',[]), settings=load('settings',{name:'Cyber Zone',phone:''}), requests=load('requests',[]);
+async function czCloudLoad(ownerId){
+ const {data,error}=await supabaseClient.from('cz_app_state').select('state_key,state_json').eq('owner_id',ownerId);
+ if(error) throw error;
+ for(const row of (data||[])){if(CZ_STATE_KEYS.includes(row.state_key)){localStorage.setItem('cz_'+row.state_key,JSON.stringify(row.state_json));}}
+ works=load('works',[]); money=load('money',[]); staff=load('staff',[]); settings=load('settings',{name:'Cyber Zone',phone:''}); requests=load('requests',[]);
+ czCloudReady=true;
+}
+async function czCloudSave(key,value){
+ const {data:auth}=await supabaseClient.auth.getUser(); if(!auth?.user) return;
+ const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members').select('owner_id,active').eq('user_id',auth.user.id).maybeSingle();
+ if(memberError) throw memberError; if(!membership||membership.active===false) throw new Error('No active organization membership');
+ const {error}=await supabaseClient.from('cz_app_state').upsert({owner_id:membership.owner_id,state_key:key,state_json:value,updated_at:new Date().toISOString()},{onConflict:'owner_id,state_key'});
+ if(error) throw error;
+}
 function persist(){save('works',works);save('money',money);save('staff',staff);save('settings',settings);save('requests',requests);refresh();}
 function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function n(v){return Number(v)||0} function ru(v){return '₹'+n(v).toLocaleString('en-IN',{maximumFractionDigits:2})}
@@ -411,6 +409,21 @@ document.addEventListener('DOMContentLoaded',function(){
    if(gate)gate.style.display='flex';
   }
  } catch(e) {}
+});
+
+// Restore an existing Supabase session after page refresh; never trust a localStorage role by itself.
+supabaseClient.auth.getSession().then(async ({data,error})=>{
+ if(error||!data?.session?.user) return;
+ try {
+  const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members').select('role,owner_id,active').eq('user_id',data.session.user.id).maybeSingle();
+  if(memberError||!membership||membership.active===false) return;
+  const role=membership.role==='management'?'Management':'Staff';
+  localStorage.setItem('cz_logged_role',role); localStorage.setItem('cz_logged_user',data.session.user.email||'');
+  document.body.classList.add('cz-authenticated');
+  if($('loginScreen'))$('loginScreen').style.display='none'; if($('publicServicePage'))$('publicServicePage').style.display='none';
+  const app=document.querySelector('.app');if(app){app.classList.remove('hidden');app.style.display='grid';}
+  await czCloudLoad(membership.owner_id); applyRoleView(); refresh();
+ } catch(e){console.error('Session restore failed',e);}
 });
 </script>
 </body>
