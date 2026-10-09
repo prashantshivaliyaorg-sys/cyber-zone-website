@@ -238,6 +238,7 @@ $('loginBtn').addEventListener('click',()=>{
    }
  }
  try{localStorage.setItem('cz_logged_role',role);localStorage.setItem('cz_logged_user',uid);}catch(e){}
+ document.body.classList.add('cz-authenticated');
  const gate=$('loginScreen'),pub=$('publicServicePage'),app=document.querySelector('.app');
  if(gate)gate.style.display='none';if(pub)pub.style.display='none';if(app){app.classList.remove('hidden');app.style.display='grid';}applyRoleView();refresh();
 });
@@ -407,6 +408,7 @@ document.addEventListener('DOMContentLoaded',function(){
   const pub=document.getElementById('publicServicePage');
   const app=document.querySelector('.app');
   if(role && uid && app){
+   document.body.classList.add('cz-authenticated');
    if(gate)gate.style.display='none';
    if(pub)pub.style.display='none';
    app.classList.remove('hidden');app.style.display='grid';
