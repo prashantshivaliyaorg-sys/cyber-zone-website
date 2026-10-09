@@ -37,6 +37,10 @@ form .required-field-wrap input:not([type="checkbox"]),form .required-field-wrap
 input:focus,select:focus,textarea:focus{outline:2px solid #175cd3;outline-offset:1px}
 .required-help{font-size:12px;color:#b42318;font-weight:600;margin:0 0 12px}
 
+
+/* Auth screen isolation: never show the management dashboard behind public registration or login. */
+body:not(.cz-authenticated) .app{display:none!important}
+body.cz-authenticated .app{display:grid!important}
 </style>
 
 <style id="yellowServiceRegistrationStyle">
@@ -265,7 +269,7 @@ $('resetPasswordBtn').addEventListener('click',()=>{
  setMsg(true,'Staff password reset successfully. Log in with this mobile number and your new password.');
  $('loginPassword').value='';
 });
-$('publicRegistrationOpen').addEventListener('click',()=>{$('loginScreen').style.display='none';$('publicServicePage').style.display='block';});
+$('publicRegistrationOpen').addEventListener('click',()=>{document.body.classList.remove('cz-authenticated');const app=document.querySelector('.app');if(app)app.style.display='none';$('loginScreen').style.display='none';$('publicServicePage').style.display='block';});
 // Demo-only OTP login. Replace with server-verified SMS OTP before production use.
 let demoOtp = '';
 function sendDemoOTP(){
@@ -278,7 +282,7 @@ function verifyDemoOTP(){
  if($('otpInput').value.trim()!==demoOtp||!demoOtp){alert('OTP   Demo OTP 246810 ');return}
  localStorage.setItem('cz_demo_logged_in','1');$('loginGate').classList.add('hidden');
 }
-function logoutDemo(){try{localStorage.removeItem('cz_logged_role');localStorage.removeItem('cz_logged_user');localStorage.removeItem('cz_demo_logged_in');}catch(e){}const app=document.querySelector('.app'),gate=$('loginScreen'),pub=$('publicServicePage');if(app){app.style.display='none';app.classList.add('hidden');}if(gate){gate.style.display='flex';}if(pub){pub.style.display='none';}if($('loginPassword'))$('loginPassword').value='';if($('loginError'))$('loginError').textContent='You have been logged out.';}
+function logoutDemo(){document.body.classList.remove('cz-authenticated');try{localStorage.removeItem('cz_logged_role');localStorage.removeItem('cz_logged_user');localStorage.removeItem('cz_demo_logged_in');}catch(e){}const app=document.querySelector('.app'),gate=$('loginScreen'),pub=$('publicServicePage');if(app){app.style.display='none';app.classList.add('hidden');}if(gate){gate.style.display='flex';}if(pub){pub.style.display='none';}if($('loginPassword'))$('loginPassword').value='';if($('loginError'))$('loginError').textContent='You have been logged out.';}
 
 const today=()=>new Date().toLocaleDateString('en-CA');
 const load=(k,d)=>{try{return JSON.parse(localStorage.getItem('cz_'+k))??d}catch{return d}};
