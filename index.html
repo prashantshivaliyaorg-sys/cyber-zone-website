@@ -217,7 +217,7 @@ body.cz-authenticated .app{display:grid!important}
 const SUPABASE_URL = "https://knojmxcyjfnizznpcetf.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_tyTLamKh8j7d2Vnu7swzbw_EyhkgugN";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-const CZ_MANAGEMENT_UID = "6d7a47f3-d047-44a8-9e12-3daa7dedeb3c";
+const CZ_MANAGEMENT_UID = "6e40f787-13a7-46a3-92b4-73bf221f8189";
 let czCloudReady = false;
 const CZ_STATE_KEYS = ["works", "money", "staff", "settings", "requests"];
 const $=id=>document.getElementById(id);
@@ -276,9 +276,20 @@ let works=load('works',[]), money=load('money',[]), staff=load('staff',[]), sett
 async function czCloudLoad(ownerId){
  const {data,error}=await supabaseClient.from('cz_app_state').select('state_key,state_json').eq('owner_id',ownerId);
  if(error) throw error;
- for(const row of (data||[])){if(CZ_STATE_KEYS.includes(row.state_key)){localStorage.setItem('cz_'+row.state_key,JSON.stringify(row.state_json));}}
+ const rows=data||[];
+ // First-login migration: if this organization has no cloud state yet, upload the current browser's saved data.
+ if(rows.length===0){
+   const localState={works:load('works',[]),money:load('money',[]),staff:load('staff',[]),settings:load('settings',{name:'Cyber Zone',phone:''}),requests:load('requests',[])};
+   czCloudReady=true;
+   for(const key of CZ_STATE_KEYS){await czCloudSave(key,localState[key]);}
+ } else {
+   for(const row of rows){if(CZ_STATE_KEYS.includes(row.state_key)){localStorage.setItem('cz_'+row.state_key,JSON.stringify(row.state_json));}}
+   // Fill any state keys not yet present in the cloud from this browser's saved values.
+   const cloudKeys=new Set(rows.map(row=>row.state_key));
+   czCloudReady=true;
+   for(const key of CZ_STATE_KEYS){if(!cloudKeys.has(key)){await czCloudSave(key,load(key,key==='settings'?{name:'Cyber Zone',phone:''}:[]));}}
+ }
  works=load('works',[]); money=load('money',[]); staff=load('staff',[]); settings=load('settings',{name:'Cyber Zone',phone:''}); requests=load('requests',[]);
- czCloudReady=true;
 }
 async function czCloudSave(key,value){
  const {data:auth}=await supabaseClient.auth.getUser(); if(!auth?.user) return;
