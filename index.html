@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cyber Zone Management</title>
+<style>
+:root{--bg:#f3f6fb;--card:#fff;--ink:#182230;--muted:#687588;--line:#e4eaf2;--blue:#175cd3;--nav:#101d36;--green:#12a56a;--orange:#f79009;--red:#d92d20}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Noto Sans Devanagari",sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;border-radius:9px;padding:10px 13px;background:var(--blue);color:white;font-weight:600}button.secondary{background:#eaf1ff;color:#174ea6}button.danger{background:#fee4e2;color:#b42318}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}.sidebar{background:var(--nav);color:#fff;padding:22px 15px}.brand{font-size:21px;font-weight:800;padding:4px 10px 22px}.brand small{display:block;color:#a9b7d0;font-size:12px;font-weight:500;margin-top:6px}.nav{display:grid;grid-template-columns:repeat(3,minmax(130px,1fr));gap:8px}.nav button{display:flex;align-items:center;justify-content:center;text-align:center;background:transparent;color:#d7e1f2;margin:0;padding:12px 10px;border-radius:9px;min-height:58px;white-space:normal}.nav button.active,.nav button:hover{background:#20375e;color:#fff}.side-note{font-size:12px;line-height:1.5;color:#a9b7d0;margin:24px 10px}
+main{min-width:0;padding:24px}.topbar{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:22px}.topbar h1{font-size:25px;margin:0}.sub{color:var(--muted);font-size:13px;margin-top:6px}.top-actions{display:flex;gap:8px;flex-wrap:wrap}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px}.card,.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px;box-shadow:0 2px 5px #10213a05}.metric-label{color:var(--muted);font-size:13px}.metric{font-size:26px;font-weight:800;margin:9px 0 5px}.metric-note{font-size:12px;color:var(--muted)}.layout{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}.panel{margin-bottom:16px}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.panel h2{font-size:17px;margin:0}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px}.toolbar input,.toolbar select{max-width:100%;min-width:140px}
+input,select,textarea{width:100%;border:1px solid #d0d9e6;border-radius:8px;padding:10px;background:#fff;color:var(--ink)}label{display:block;font-size:13px;color:#475467;margin-bottom:6px}.field{margin-bottom:12px}.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.formgrid .wide{grid-column:1/-1}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:680px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}td:last-child{min-width:180px}td:last-child button{margin:2px}th{color:var(--muted);font-weight:700;background:#f8faff}.badge{display:inline-block;padding:5px 8px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}.Pending{background:#fff1d6;color:#9a6700}.Processing{background:#e7f0ff;color:#175cd3}.Completed{background:#dcfae6;color:#067647}.Rejected{background:#fee4e2;color:#b42318}.On-Hold{background:#eaecf0;color:#344054}.empty{padding:22px;text-align:center;color:var(--muted)}.hidden{display:none!important}.notice{background:#fff8e6;border:1px solid #f9d98c;color:#7a4d00;border-radius:10px;padding:12px;font-size:13px;line-height:1.5;margin-bottom:16px}.success{background:#ecfdf3;border-color:#abefc6;color:#067647}.mini{padding:7px 9px;font-size:12px}.muted{color:var(--muted)}.report-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.report-box{padding:15px;border-radius:10px;background:#f8faff;border:1px solid var(--line)}.report-box b{font-size:20px;display:block;margin-top:8px}
+@media(max-width:1100px){.nav{grid-template-columns:repeat(2,minmax(120px,1fr))}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}.app{grid-template-columns:210px 1fr}}
+@media(min-width:1101px){.app{grid-template-columns:1fr}.sidebar{padding:14px 22px}.brand{padding:4px 10px 14px}.nav{grid-template-columns:repeat(4,minmax(150px,1fr))}.side-note{margin:14px 10px}}
+
+@media(max-width:700px){.app{display:block}.sidebar{padding:12px}.brand{padding:5px 7px 12px}.nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.nav button{white-space:normal;width:100%;margin:0;padding:13px 10px;text-align:center;border:1px solid #314567;min-height:48px}.side-note{display:none}main{padding:15px}.topbar{align-items:flex-start;flex-direction:column}.topbar h1{font-size:22px}.cards{gap:9px}.card{padding:13px}.metric{font-size:22px}.formgrid,.report-grid{grid-template-columns:1fr}.formgrid .wide{grid-column:auto}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* Layout correction: navigation stays in a left sidebar like the reference image */
+.app{display:grid!important;grid-template-columns:250px minmax(0,1fr)!important;align-items:start!important;min-height:100vh}
+.sidebar{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:18px 14px!important}
+.nav{display:flex!important;flex-direction:column!important;gap:6px!important}
+.nav button{display:flex!important;width:100%!important;justify-content:flex-start!important;text-align:left!important;margin:0!important;padding:12px 13px!important;min-height:46px!important;white-space:normal!important}
+main,.main,.content{min-width:0!important;width:100%!important}
+@media(max-width:800px){.app{grid-template-columns:190px minmax(0,1fr)!important}.sidebar{padding:10px 8px!important}.nav button{padding:10px 8px!important;font-size:13px!important}}
+@media(max-width:560px){.app{display:block!important}.sidebar{position:relative;height:auto;overflow:visible}.nav{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}.nav button{justify-content:center!important;text-align:center!important}}
+
+/* Required/compulsory fields are clearly highlighted */
+label.required-field{color:#b42318!important;font-weight:700!important}
+.required-tag{display:inline-block;margin-left:7px;padding:2px 6px;border-radius:5px;background:#fee4e2;color:#b42318;font-size:10px;font-weight:800;letter-spacing:.3px;vertical-align:middle}
+.field.required-field-wrap input:not([type="checkbox"]),.field.required-field-wrap select,.field.required-field-wrap textarea,
+form .required-field-wrap input:not([type="checkbox"]),form .required-field-wrap select,form .required-field-wrap textarea{
+ border:2px solid #e5484d!important;background:#fffafa!important;box-shadow:0 0 0 2px #fee4e2!important
+}
+input:focus,select:focus,textarea:focus{outline:2px solid #175cd3;outline-offset:1px}
+.required-help{font-size:12px;color:#b42318;font-weight:600;margin:0 0 12px}
+
+</style>
+</head>
+<body>
+<div id="loginGate" style="display:none">
+ <div style="background:white;border:1px solid #e4eaf2;border-radius:18px;padding:24px;width:min(100%,420px);box-shadow:0 12px 35px #10213a18">
+  <div style="font-size:25px;font-weight:800;color:#175cd3;margin-bottom:5px">🖥️ Cyber Zone</div><div style="color:#687588;margin-bottom:20px">Management System · Admin Login</div>
+  <div class="field"><label>Admin का नाम</label><input id="loginName" value="Prashant Shivaliya" readonly></div>
+  <div class="field"><label>रजिस्टर्ड Mobile Number</label><input id="loginPhone" value="7818942933" inputmode="numeric" maxlength="10" readonly></div>
+  <button id="sendOtpBtn" style="width:100%" onclick="sendDemoOTP()">OTP भेजें</button>
+  <div id="otpArea" class="hidden" style="margin-top:14px"><div class="field"><label>OTP दर्ज करें</label><input id="otpInput" inputmode="numeric" maxlength="6" placeholder="6 अंकों का OTP"></div><button style="width:100%" onclick="verifyDemoOTP()">Login करें</button></div>
+  <div id="loginMessage" class="notice" style="margin-top:15px;margin-bottom:0">यह अभी Demo Login है। असली SMS OTP के लिए ऑनलाइन backend और SMS Gateway जोड़ना जरूरी है।</div>
+ </div>
+</div>
+
+
+
+<div id="publicServicePage" style="display:none;min-height:100vh;background:#f3f6fb;padding:18px">
+ <div style="max-width:760px;margin:0 auto;background:white;border:1px solid #dce4ef;border-radius:16px;padding:22px">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><h1 style="margin:0;color:#175cd3">Cyber Zone</h1><p style="margin:5px 0 0;color:#667085">Customer सेवा पोर्टल</p></div><button type="button" id="staffLoginOpen" class="secondary">Management / Staff Login</button></div>
+  <h2 style="margin-top:22px">सेवा रजिस्ट्रेशन</h2><p style="color:#667085;font-size:14px">अपनी सेवा चुनें, जानकारी भरें और जरूरी दस्तावेज अपलोड करके आवेदन जमा करें।</p>
+  <form id="publicServiceForm"><div class="formgrid">
+   <div class="field"><label>Customer Name *</label><input id="pName" required></div>
+   <div class="field"><label>Mobile Number *</label><input id="pPhone" required inputmode="numeric" maxlength="10" pattern="[0-9]{10}"></div>
+   <div class="field"><label>कौन-सी सेवा चाहिए? *</label><select id="pService" required><option value="">सेवा चुनें</option><option>आय प्रमाण पत्र</option><option>जाति प्रमाण पत्र</option><option>निवास प्रमाण पत्र</option><option>पैन कार्ड</option><option>ऑनलाइन फॉर्म</option><option>प्रिंट / फोटो कॉपी</option><option>अन्य सेवा</option></select></div>
+   <div class="field"><label>Work का विवरण</label><input id="pDetails"></div>
+   <div class="field wide"><label>जरूरी दस्तावेज अपलोड करें *</label><input id="pFiles" type="file" multiple required accept=".pdf,.jpg,.jpeg,.png"><small style="color:#667085">PDF, JPG, PNG; demo में हर फाइल 2 MB तक।</small><div id="pFileNames" style="font-size:12px;margin-top:6px"></div></div>
+   <div class="field wide"><label>अतिरिक्त जानकारी</label><textarea id="pNote" rows="3"></textarea></div>
+   <div class="wide"><label><input type="checkbox" id="pConsent" required style="width:auto"> मैं सहमत हूँ कि मेरी जानकारी इस आवेदन के लिए इस्तेमाल की जाए।</label></div>
+   <div class="wide"><button type="submit">आवेदन Submit करें</button></div>
+  </div><div id="pMessage" style="margin-top:12px;font-size:14px"></div></form>
+  <p style="font-size:12px;color:#667085;margin-top:22px">नोट: यह Demo है। ऑनलाइन सर्वर सेट होने के बाद ही आवेदन आपके अलग डिवाइस वाले Management Portal पर पहुँचेगा और दस्तावेज सुरक्षित रूप से स्टोर होंगे।</p>
+ </div>
+</div>
+
+<div id="loginScreen" style="position:fixed;inset:0;z-index:9999;background:#eef3fb;display:flex;align-items:center;justify-content:center;padding:18px">
+ <div style="background:white;width:min(100%,420px);border:1px solid #dce4ef;border-radius:18px;padding:24px;box-shadow:0 12px 40px #13294b18">
+  <button type="button" id="publicRegistrationOpen" style="width:100%;padding:12px;margin-bottom:18px;border:0;border-radius:9px;background:#087f5b;color:white;font-weight:700;cursor:pointer">सेवा रजिस्ट्रेशन करें / Online Service Registration</button>
+  <h2 style="margin:0 0 5px;color:#152746">Cyber Zone Login</h2>
+  <p style="color:#667085;margin:0 0 18px;font-size:14px">Management या Staff चुनें और अपनी ID/Password खुद भरें।</p>
+  <label style="display:block;font-size:13px;margin-bottom:6px">Login प्रकार</label>
+  <select id="loginRole" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px"><option value="Management">Management</option><option value="Staff">Staff</option></select>
+  <label style="display:block;font-size:13px;margin-bottom:6px">User ID / Mobile Number</label>
+  <input id="loginId" autocomplete="off" placeholder="अपनी ID या Mobile Number डालें" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px">
+  <label style="display:block;font-size:13px;margin-bottom:6px">Password</label>
+  <input id="loginPassword" type="password" autocomplete="new-password" placeholder="अपना Password भरें" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px">
+  <button type="button" id="loginBtn" style="width:100%;padding:12px;border:0;border-radius:8px;background:#175cd3;color:white;font-weight:700">Login करें</button>
+  <button type="button" id="forgotPasswordOpen" class="secondary" style="width:100%;margin-top:12px">Forgot Password? / Forgot Password?</button>
+  <div id="forgotBox" style="display:none;margin-top:14px;padding:12px;border:1px solid #dce4ef;border-radius:10px"><b>पासवर्ड रीसेट / Reset Password</b><p style="font-size:12px;color:#667085">Demo recovery uses the registered mobile number and recovery code. For a real public website, server-side OTP verification is required.</p><label style="display:block;font-size:13px;margin:8px 0 4px">रजिस्टर्ड Mobile Number</label><input id="resetPhone" inputmode="numeric" maxlength="10" placeholder="7818942933" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px"><label style="display:block;font-size:13px;margin:8px 0 4px">Recovery Code</label><input id="resetCode" placeholder="Enter recovery code" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px"><label style="display:block;font-size:13px;margin:8px 0 4px">नया Password</label><input id="resetNewPassword" type="password" minlength="8" placeholder="कम से कम 8 अक्षर" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px"><button type="button" id="resetPasswordBtn" style="width:100%;margin-top:10px">नया Password सेव करें</button><div id="resetMessage" style="font-size:13px;margin-top:8px"></div></div>
+  <div id="loginError" style="color:#b42318;font-size:13px;margin-top:12px"></div>
+ </div>
+</div>
+
+<div class="app">
+<aside class="sidebar">
+  <div class="brand">🖥️ Cyber Zone<small>Management System</small></div>
+  <nav class="nav">
+    <button class="active" data-page="dashboard">▦ Dashboard</button>
+    <button data-page="requests">🗂 Service Registration</button>
+    <button data-page="work">▤ Daily Work</button>
+    <button data-page="customers">♙ Customers</button>
+    <button data-page="expenses">₹ Income & Expenses</button>
+    <button data-page="staff">♧ Staff Management</button>
+    <button data-page="reports">▥ Reports</button>
+    <button data-page="settings">⚙ Settings & Backup</button>
+  </nav>
+  <div class="side-note">Starter version · Data is saved in this browser on this device. Use Backup regularly.</div>
+</aside>
+<main>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px;gap:8px;align-items:center">
+      <label for="languageToggle" style="margin:0;font-weight:700">Language / भाषा</label>
+      <select id="languageToggle" style="width:auto;min-width:125px;padding:8px 10px"><option value="en">English</option><option value="hi">हिन्दी</option></select>
+    </div>
+  <div class="topbar">
+    <div><h1 id="pageTitle">Dashboard</h1><div class="sub" id="todayLabel"></div></div>
+    <div class="top-actions"><button class="secondary" onclick="logoutDemo()">Logout</button><button class="secondary" onclick="exportCSV()">Export CSV</button><button onclick="showPage('work');openWorkForm()">+ Add New Work</button></div>
+  </div>
+  <div class="notice">⚠️ <b>Important:</b> Starter version: data is saved in this browser on this device. Shared data across devices, secure login and automated SMS require an online backend/database and SMS gateway.</div>
+
+  <section id="page-dashboard">
+    <div class="cards">
+      <div class="card"><div class="metric-label">Total Work Today</div><div class="metric" id="mToday">0</div><div class="metric-note">आज जोड़े गए Work</div></div>
+      <div class="card"><div class="metric-label">Pending Work</div><div class="metric" id="mPending">0</div><div class="metric-note">अभी Balance Work</div></div>
+      <div class="card"><div class="metric-label">Processing Work</div><div class="metric" id="mProcessing">0</div><div class="metric-note">प्रक्रिया में</div></div>
+      <div class="card"><div class="metric-label">Completed Work</div><div class="metric" id="mCompleted">0</div><div class="metric-note">पूरे हुए Work</div></div>
+      <div class="card"><div class="metric-label">आज Amount Received</div><div class="metric" id="mIncome">₹0</div><div class="metric-note">आज दर्ज भुगतान</div></div>
+      <div class="card"><div class="metric-label">आज का Cost</div><div class="metric" id="mExpense">₹0</div><div class="metric-note">आज दर्ज Cost</div></div>
+      <div class="card"><div class="metric-label">Balance फीस</div><div class="metric" id="mDue">₹0</div><div class="metric-note">सभी Workों की बकाया फीस</div></div>
+      <div class="card"><div class="metric-label">कुल Customer</div><div class="metric" id="mCustomers">0</div><div class="metric-note">अलग-अलग Mobile Number</div></div>
+    </div>
+    <div class="layout">
+      <div class="panel"><div class="panel-head"><h2>हाल के Work</h2><button class="secondary mini" onclick="showPage('work')">सभी देखें</button></div><div class="table-wrap"><table><thead><tr><th>Customer</th><th>Work</th><th>स्थिति</th><th>Balance फीस</th></tr></thead><tbody id="recentRows"></tbody></table></div></div>
+      <div class="panel"><div class="panel-head"><h2>आज का सारांश</h2></div><div class="report-grid"><div class="report-box">आज जोड़ी गई फीस<b id="sumFees">₹0</b></div><div class="report-box">प्राप्त भुगतान<b id="sumPaid">₹0</b></div><div class="report-box">नकद अंतर (भुगतान−Cost)<b id="sumNet">₹0</b></div></div><p class="muted" style="font-size:12px;line-height:1.5">यह साधारण हिसाब है, अकाउंटिंग/टैक्स रिपोर्ट नहीं।</p></div>
+    </div>
+  </section>
+
+  <section id="page-requests" class="hidden"><div class="panel"><div class="panel-head"><h2>नए Service Registration आवेदन</h2><button class="secondary mini" onclick="renderRequests()">Refresh</button></div><div class="toolbar"><select id="requestStatusFilter" onchange="renderRequests()"><option value="">सभी आवेदन</option><option>Pending Approval</option><option>Approved</option><option>Rejected</option><option>In Process</option><option>Completed</option></select><input id="requestSearch" placeholder="नाम, मोबाइल या सेवा खोजें" oninput="renderRequests()"></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Customer</th><th>सेवा</th><th>दस्तावेज के नाम</th><th>स्थिति</th><th>Actions</th></tr></thead><tbody id="requestRows"></tbody></table></div></div></section>
+<section id="page-work" class="hidden">
+    <div class="panel" id="workFormPanel">
+      <div class="panel-head"><h2 id="workFormTitle">Add New Work</h2><button class="secondary mini" onclick="toggleWorkForm(false)">Close Form</button></div>
+      <form id="workForm"><input type="hidden" id="workId"><div class="formgrid">
+        <div class="field"><label>Customer Name (Optional)</label><input id="wName" placeholder="Enter customer name"></div>
+        <div class="field"><label>Mobile Number (Optional)</label><input id="wPhone" inputmode="numeric" maxlength="10" placeholder="Enter mobile number"></div>
+        <div class="field"><label>Work Name *</label><input id="wTask" required placeholder="e.g. Income Certificate"></div>
+        <div class="field"><label>Application / Reference Number</label><input id="wRef" placeholder="Optional"></div>
+        <div class="field"><label>Total Charge (₹) *</label><input id="wCharge" type="number" min="0" step="0.01" required value="0"></div>
+        <div class="field"><label>Amount Received (₹)</label><input id="wPaid" type="number" min="0" step="0.01" value="0"></div>
+        <div class="field"><label>Work Cost (₹)</label><input id="wCost" type="number" min="0" step="0.01" value="0"></div>
+        <div class="field"><label>Staff Commission for This Work (₹)</label><input id="wCommission" type="number" min="0" step="0.01" value="0" placeholder="Commission for assigned staff"></div>
+<div class="field"><label>Customer Credit / Outstanding (₹)</label><input id="wUdhaar" type="number" min="0" step="0.01" value="0" placeholder="Outstanding amount, if any"></div>
+<div class="field"><label>Outstanding Payment Status</label><select id="wUdhaarDone"><option value="No">Pending</option><option value="Yes">Paid in Full</option></select></div>
+        <div class="field"><label>Work Status</label><select id="wStatus"><option>Pending</option><option>Processing</option><option>Completed</option><option>Rejected</option><option>On Hold</option></select></div>
+        <input id="wDate" type="hidden">
+        <div class="field"><label>Estimated Completion Date</label><input id="wDueDate" type="date"></div>
+        <div class="field"><label>Assigned Staff *</label><select id="wStaff" required><option value="">Select staff member</option></select></div>
+        <div class="field"><label>Notes</label><input id="wNotes" placeholder="Optional notes"></div>
+        <div class="wide"><button type="submit">Save Work</button> <button type="button" class="secondary" onclick="resetWorkForm()">Reset Form</button></div>
+      </div></form>
+    </div>
+    
+    <div class="panel"><div class="panel-head"><h2>Work List</h2><button onclick="openWorkForm()">+ Add Work</button></div><div class="toolbar"><input id="workSearch" placeholder="Search name, mobile or work" oninput="renderWork()"><select id="statusFilter" onchange="renderWork()"><option value="">All Statuses</option><option>Pending</option><option>Processing</option><option>Completed</option><option>Rejected</option><option>On Hold</option></select></div><div class="table-wrap"><table><thead><tr><th>Date Added</th><th>Customer</th><th>Work</th><th>Charge</th><th>Received</th><th>Balance</th><th>Cost</th><th>Staff Commission</th><th>Profit</th><th>Outstanding</th><th>Status</th><th>Actions</th></tr></thead><tbody id="workRows"></tbody></table></div></div>
+  </section>
+
+  <section id="page-customers" class="hidden"><div class="panel"><div class="panel-head"><h2>Customer List</h2></div><div class="toolbar"><input id="customerSearch" placeholder="Customer Name या मोबाइल खोजें" oninput="renderCustomers()"></div><div class="table-wrap"><table><thead><tr><th>Customer</th><th>मोबाइल</th><th>Total Work</th><th>कुल Charge</th><th>Amount Received</th><th>Balance फीस</th><th>Work Status</th></tr></thead><tbody id="customerRows"></tbody></table></div></div></section>
+
+  <section id="page-expenses" class="hidden">
+<div class="panel" id="commissionSummary"><div class="panel-head"><h2>Current Month: Staff Commission & Profit</h2></div><div id="commissionSummaryBody" class="cards"></div></div>
+
+<div class="panel" id="staffCommissionSettings">
+ <div class="panel-head"><h2>Staff Commission Settings</h2></div>
+ <p>Set the default commission percentage for new work. You can change it whenever needed.</p>
+ <div class="formgrid">
+  <div class="field"><label for="defaultStaffCommissionPct">Default Staff Commission (%)</label><input id="defaultStaffCommissionPct" type="number" min="0" max="100" step="0.1" value="0"></div>
+  <div class="field"><label for="commissionBase">Commission calculated on</label><select id="commissionBase"><option value="charge">Total Work Charge</option><option value="profit">Profit After Work Cost</option></select></div>
+  <div class="wide"><button type="button" onclick="saveDefaultStaffCommission()">Save Commission Settings</button></div>
+ </div>
+ <p class="muted">Existing work records are not changed automatically. The selected percentage is used when adding new work.</p>
+</div>
+
+
+<div class="panel"><div class="panel-head"><h2>आय / Cost दर्ज करें</h2></div><form id="moneyForm"><div class="formgrid">
+    <div class="field"><label>प्रकार</label><select id="moneyType"><option value="expense">Cost</option><option value="income">अन्य आय</option></select></div>
+    <div class="field"><label>Date</label><input type="date" id="moneyDate" required></div>
+    <div class="field"><label>श्रेणी</label><select id="moneyCategory"><option>कागज/प्रिंटिंग</option><option>इंटरनेट</option><option>बिजली</option><option>स्टेशनरी</option><option>Staff सैलरी</option><option>यात्रा</option><option>अन्य आय</option><option>अन्य Cost</option></select></div>
+    <div class="field"><label>रकम (₹)</label><input type="number" id="moneyAmount" min="0.01" step="0.01" required></div>
+    <div class="field wide"><label>विवरण</label><input id="moneyNote" placeholder="किसलिए Cost/आय हुई"></div>
+    <div class="wide"><button type="submit">रिकॉर्ड सेव करें</button></div>
+  </div></form></div><div class="panel"><div class="panel-head"><h2>आय और Cost का रिकॉर्ड</h2></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>प्रकार</th><th>श्रेणी</th><th>विवरण</th><th>रकम</th><th>Actions</th></tr></thead><tbody id="moneyRows"></tbody></table></div></div></section>
+
+  <section id="page-staff" class="hidden"><div class="panel"><div class="panel-head"><h2>Staff जोड़ें</h2></div><form id="staffForm"><div class="formgrid"><div class="field"><label>Staff का नाम *</label><input id="sName" required></div><div class="field"><label>Mobile Number</label><input id="sPhone" inputmode="numeric" maxlength="10"></div><div class="field"><label>पद</label><input id="sRole" value="Staff"></div><div class="field"><label>जॉइनिंग Date</label><input id="sDate" type="date"></div><div class="field"><label>Staff Password (required)</label><input id="sPassword" type="password" autocomplete="new-password" minlength="8" required></div><div class="wide"><button type="submit">Staff सेव करें</button></div></div></form></div><div class="panel"><div class="panel-head"><h2>Staff सूची</h2></div><div class="table-wrap"><table><thead><tr><th>नाम</th><th>मोबाइल</th><th>पद</th><th>जॉइनिंग</th><th>Actions</th></tr></thead><tbody id="staffRows"></tbody></table></div><p class="muted" style="font-size:12px">यहाँ Staff जोड़ने/हटाने का विकल्प है। अलग-अलग Staff के सुरक्षित OTP लॉगिन के लिए backend/database जोड़ना जरूरी है।</p></div></section>
+
+  <section id="page-reports" class="hidden"><div class="panel"><div class="panel-head"><h2>रिपोर्ट</h2><button class="secondary" onclick="exportCSV()">CSV डाउनलोड करें</button></div><div class="report-grid"><div class="report-box">Total Work<b id="rWorks">0</b></div><div class="report-box">कुल Charge<b id="rCharges">₹0</b></div><div class="report-box">कुल Amount Received<b id="rPaid">₹0</b></div><div class="report-box">कुल बकाया<b id="rDue">₹0</b></div><div class="report-box">कुल दर्ज Cost<b id="rExpenses">₹0</b></div><div class="report-box">Completed<b id="rComplete">0</b></div></div></div></section>
+
+  <section id="page-settings" class="hidden"><div class="panel"><div class="panel-head"><h2>Settings & Backup</h2></div><div class="field"><label>सेंटर का नाम</label><input id="centerName" value="Cyber Zone"></div><div class="field"><label>संपर्क नंबर (SMS के लिए)</label><input id="centerPhone" placeholder="आपके सेंटर का Mobile Number"></div><button onclick="saveSettings()">सेटिंग सेव करें</button> <button class="secondary" onclick="downloadBackup()">पूरा Backup डाउनलोड करें</button><div style="margin-top:18px"><label>Backup फाइल से डेटा वापस लाएँ (JSON)</label><input type="file" id="backupFile" accept=".json,application/json"><button class="secondary" style="margin-top:8px" onclick="restoreBackup()">Backup Restore करें</button></div><hr style="border:0;border-top:1px solid var(--line);margin:20px 0"><div class="notice">डोमेन और ऑनलाइन संचालन के लिए: इस HTML को hosting पर प्रकाशित करना होगा। ऑनलाइन साझा database, सुरक्षित login, scheduled SMS, delivery reports और automatic pending reminders अलग backend/API configuration के साथ जोड़े जाते हैं।</div><button class="danger" onclick="clearAll()">सारा लोकल डेटा मिटाएँ</button></div></section>
+  <footer class="muted" style="font-size:12px;padding:10px 2px">Cyber Zone Management · Starter website · कृपया नियमित Backup रखें।</footer>
+</main>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+
+
+// Local demo authentication. Credentials are stored in this browser only.
+$('loginBtn').addEventListener('click',()=>{
+ const uid=String($('loginId')?.value||'').trim();
+ const password=String($('loginPassword')?.value||'');
+ const role=String($('loginRole')?.value||'Management');
+ const err=$('loginError'); if(err)err.textContent='';
+ if(!uid||!password){if(err)err.textContent='Please enter your User ID and Password.';return;}
+ if(role==='Management'){
+   const saved=localStorage.getItem('cz_admin_password')||'CZadmin@123';
+   if(!(['7818942933','prashantshivaliya'].includes(uid.toLowerCase()))||password!==saved){
+     if(err)err.textContent='Management ID or Password is incorrect. Demo ID: 7818942933.';
+     return;
+   }
+ } else {
+   const people=Array.isArray(staff)?staff:load('staff',[]);
+   const person=people.find(x=>String(x.phone||'').trim()===uid||String(x.id||'').trim()===uid||String(x.userId||'').trim()===uid);
+   const saved=person&&(String(person.password||'')||String((load('staffPasswords',{})||{})[person.id]||''));
+   if(!person||!saved||password!==saved){
+     if(err)err.textContent='Staff ID/Password is incorrect. Use the staff mobile/ID and the password saved in Staff Management.';
+     return;
+   }
+ }
+ try{localStorage.setItem('cz_logged_role',role);localStorage.setItem('cz_logged_user',uid);}catch(e){}
+ const gate=$('loginScreen'),pub=$('publicServicePage'),app=document.querySelector('.app');
+ if(gate)gate.style.display='none';if(pub)pub.style.display='none';if(app){app.classList.remove('hidden');app.style.display='grid';}
+});
+$('forgotPasswordOpen').addEventListener('click',()=>{
+ const box=$('forgotBox');if(box)box.style.display=box.style.display==='none'?'block':'none';
+});
+$('resetPasswordBtn').addEventListener('click',()=>{
+ const phone=String($('resetPhone')?.value||'').trim();
+ const code=String($('resetCode')?.value||'').trim();
+ const pw=String($('resetNewPassword')?.value||'');
+ const msg=$('resetMessage');
+ const setMsg=(ok,text)=>{if(msg){msg.style.color=ok?'#067647':'#b42318';msg.textContent=text;}};
+ if(pw.length<8){setMsg(false,'Password must contain at least 8 characters.');return;}
+ // Enter recovery code; for a real public website use server-side OTP verification.
+ if(code!=='CZ-RECOVER-2933'){setMsg(false,'Recovery Code is incorrect. Enter recovery code: CZ-RECOVER-2933.');return;}
+ if(phone==='7818942933'){
+   localStorage.setItem('cz_admin_password',pw);
+   $('loginRole').value='Management';$('loginId').value=phone;
+   setMsg(true,'Management password reset successfully. You can log in with the new password.');
+   $('loginPassword').value='';return;
+ }
+ const people=Array.isArray(staff)?staff:load('staff',[]);
+ const person=people.find(x=>String(x.phone||'').trim()===phone);
+ if(!person){setMsg(false,'No staff account found for this mobile number.');return;}
+ person.password=pw;
+ save('staff',people);
+ staff=people;
+ $('loginRole').value='Staff';$('loginId').value=phone;
+ setMsg(true,'Staff password reset successfully. Log in with this mobile number and your new password.');
+ $('loginPassword').value='';
+});
+$('publicRegistrationOpen').addEventListener('click',()=>{$('loginScreen').style.display='none';$('publicServicePage').style.display='block';});
+// Demo-only OTP login. Replace with server-verified SMS OTP before production use.
+let demoOtp = '';
+function sendDemoOTP(){
+ const phone=$('loginPhone').value.trim();
+ if(phone!=='7818942933'){alert('यह Admin Mobile Number सही नहीं है।');return}
+ demoOtp='246810'; $('otpArea').classList.remove('hidden'); $('loginMessage').className='notice';
+ $('loginMessage').innerHTML='Demo mode: SMS वास्तव में नहीं भेजा गया। परीक्षण के लिए OTP <b>246810</b> दर्ज करें। Production में असली OTP SMS Gateway से आएगा।';
+}
+function verifyDemoOTP(){
+ if($('otpInput').value.trim()!==demoOtp||!demoOtp){alert('OTP गलत है। Demo OTP 246810 है।');return}
+ localStorage.setItem('cz_demo_logged_in','1');$('loginGate').classList.add('hidden');
+}
+function logoutDemo(){localStorage.removeItem('cz_demo_logged_in');$('loginGate').classList.remove('hidden');$('otpArea').classList.add('hidden');$('otpInput').value='';}
+
+const today=()=>new Date().toLocaleDateString('en-CA');
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem('cz_'+k))??d}catch{return d}};
+const save=(k,v)=>localStorage.setItem('cz_'+k,JSON.stringify(v));
+let works=load('works',[]), money=load('money',[]), staff=load('staff',[]), settings=load('settings',{name:'Cyber Zone',phone:''}), requests=load('requests',[]);
+function persist(){save('works',works);save('money',money);save('staff',staff);save('settings',settings);save('requests',requests);refresh();}
+function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function n(v){return Number(v)||0} function ru(v){return '₹'+n(v).toLocaleString('en-IN',{maximumFractionDigits:2})}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function badge(s){return `<span class="badge ${esc(s.replace(' ','-'))}">${esc(s)}</span>`}
+function showPage(p){document.querySelectorAll('main section[id^="page-"]').forEach(x=>x.classList.add('hidden'));$('page-'+p).classList.remove('hidden');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===p));const names={dashboard:'Dashboard',work:'Daily Work',customers:'Customers',expenses:'Income & Expenses',staff:'Staff Management',reports:'Reports',settings:'Settings & Backup',requests:'Service Registration'};$('pageTitle').textContent=names[p];if(p==='work')renderWork();if(p==='customers')renderCustomers();if(p==='expenses')renderMoney();if(p==='staff')renderStaff();if(p==='requests')renderRequests();}
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+$('todayLabel').textContent=new Date().toLocaleDateString('hi-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+function openWorkForm(){showPage('work');toggleWorkForm(true);$('workId').value='';$('workFormTitle').textContent='Add New Work';$('wDate').value=today();$('wStatus').value='Pending';$('wCharge').value=0;$('wPaid').value=0;$('wCost').value=0;if($('wCommission'))$('wCommission').value=0;if($('wUdhaar'))$('wUdhaar').value=0;if($('wUdhaarDone'))$('wUdhaarDone').value='No';populateStaff();$('wName').focus()}
+function toggleWorkForm(v){$('workFormPanel').classList.toggle('hidden',!v)}
+function resetWorkForm(){$('workForm').reset();$('workId').value='';$('wDate').value=today();if($('wCommission'))$('wCommission').value=0;populateStaff()}
+function populateStaff(){const old=$('wStaff').value;$('wStaff').innerHTML='<option value="">Select staff member</option>'+staff.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');$('wStaff').value=old}
+$('workForm').addEventListener('submit',e=>{e.preventDefault();const charge=n($('wCharge').value),paid=n($('wPaid').value);if(paid>charge){alert('Amount Received कुल Charge से ज्यादा नहीं हो सकती।');return}const wid=$('workId').value;if(!$('wStaff').value){alert('Please select the staff member responsible for this work.');return}const obj={id:wid||id(),name:$('wName').value.trim(),phone:$('wPhone').value.trim(),task:$('wTask').value.trim(),ref:$('wRef').value.trim(),charge,paid,cost:n($('wCost').value),commission:n($('wCommission')?.value),udhaar:n($('wUdhaar')?.value),udhaarDone:$('wUdhaarDone')?.value||'No',status:$('wStatus').value,date:wid?(works.find(x=>x.id===wid)?.date||today()):today(),dueDate:$('wDueDate').value,staffId:$('wStaff').value,notes:$('wNotes').value.trim(),updated:new Date().toISOString()};if(wid){const i=works.findIndex(w=>w.id===wid);if(i>=0){const old=works[i];works[i]=obj;if(old.status!==obj.status)askStatusSMS(obj)}}else{works.unshift(obj);if(obj.status!=='Pending')askStatusSMS(obj)}persist();resetWorkForm();toggleWorkForm(false);showPage('work')});
+function askStatusSMS(w){if(!w.phone)return;const msg=`प्रिय ${w.name}, ${w.task} का नया स्टेटस: ${w.status}। ${settings.name||'Cyber Zone'} से संपर्क करें।`;if(confirm('Work का स्टेटस बदला गया। क्या SMS ऐप खोलना चाहते हैं?'))window.location.href='sms:'+encodeURIComponent(w.phone)+'?body='+encodeURIComponent(msg)}
+function editWork(idv){const w=works.find(x=>x.id===idv);if(!w)return;showPage('work');toggleWorkForm(true);populateStaff();$('workFormTitle').textContent='Edit Work';$('workId').value=w.id;$('wName').value=w.name;$('wPhone').value=w.phone;$('wTask').value=w.task;$('wRef').value=w.ref||'';$('wCharge').value=w.charge;$('wPaid').value=w.paid;$('wCost').value=w.cost;$('wCommission').value=w.commission||0;if($('wUdhaar'))$('wUdhaar').value=w.udhaar||0;if($('wUdhaarDone'))$('wUdhaarDone').value=w.udhaarDone||'No';$('wStatus').value=w.status;$('wDate').value=w.date;$('wDueDate').value=w.dueDate||'';$('wStaff').value=w.staffId||'';$('wNotes').value=w.notes||'';window.scrollTo({top:0,behavior:'smooth'})}
+function markComplete(idv){const w=works.find(x=>x.id===idv);if(!w)return;if(!confirm(`क्या ${w.name} का Work Completed करना है?`))return;const old=w.status;w.status='Completed';w.updated=new Date().toISOString();persist();if(old!=='Completed')askStatusSMS(w)}
+function markUdhaarDone(idv){const w=works.find(x=>x.id===idv);if(!w)return;if(confirm('क्या Customer ने उधार/Balance रकम का पूरा भुगतान कर दिया है?')){w.udhaarDone='Yes';w.udhaarPaidDate=today();persist()}}
+function deleteWork(idv){if(confirm('क्या इस Work का रिकॉर्ड हटाना है?')){works=works.filter(w=>w.id!==idv);persist()}}
+
+function renderCommissionSummary(){
+ const month=today().slice(0,7), current=works.filter(w=>String(w.date||'').slice(0,7)===month);
+ const groups={}; current.forEach(w=>{const s=staff.find(x=>String(x.id)===String(w.staffId));const key=w.staffId||'unknown';if(!groups[key])groups[key]={name:s?.name||'Unknown Staff',commission:0,profit:0,works:0};groups[key].commission+=n(w.commission);groups[key].profit+=n(w.charge)-n(w.cost)-n(w.commission);groups[key].works++});
+ const box=$('commissionSummaryBody');if(!box)return;
+ const rows=Object.values(groups);
+ box.innerHTML=`<div class="card"><div class="metric-label">Month</div><div class="metric-value">${new Date().toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</div></div><div class="card"><div class="metric-label">Total Staff Commission</div><div class="metric-value">${ru(rows.reduce((a,x)=>a+x.commission,0))}</div></div><div class="card"><div class="metric-label">Net Work Profit</div><div class="metric-value">${ru(rows.reduce((a,x)=>a+x.profit,0))}</div></div>`+
+ (rows.length?`<div class="table-wrap wide"><table><thead><tr><th>Staff Name</th><th>Work Count</th><th>Commission This Month</th><th>Profit After Commission</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(x.name)}</td><td>${x.works}</td><td>${ru(x.commission)}</td><td>${ru(x.profit)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="muted">No staff work recorded this month.</p>');
+}
+
+function renderWork(){renderCommissionSummary();const q=($('workSearch').value||'').toLowerCase(),f=$('statusFilter').value;const list=works.filter(w=>(!f||w.status===f)&&[w.name,w.phone,w.task,w.ref].join(' ').toLowerCase().includes(q));$('workRows').innerHTML=list.map(w=>`<tr><td>${esc(w.date)}</td><td><b>${esc(w.name||'-')}</b><br><span class="muted">${esc(w.phone||'')}</span></td><td>${esc(w.task)}${w.ref?'<br><span class="muted">'+esc(w.ref)+'</span>':''}</td><td>${ru(w.charge)}</td><td>${ru(w.paid)}</td><td>${ru(w.charge-w.paid)}</td><td>${ru(w.cost)}</td><td>${ru(w.commission||0)}</td><td>${ru(n(w.charge)-n(w.cost)-n(w.commission))}</td><td>${ru(w.udhaarDone==='Yes'?0:(w.udhaar||0))}<br>${w.udhaarDone==='Yes'?'<small>Paid</small>':`<button class="secondary mini" onclick="markUdhaarDone('${w.id}')">Mark Paid</button>`}</td><td>${badge(w.status)}</td><td><button class="secondary mini" onclick="editWork('${w.id}')">Edit</button> <button class="secondary mini" onclick="askStatusSMS(works.find(x=>x.id==='${w.id}'))">SMS</button> ${w.status!=='Completed'?`<button class="mini" style="background:#12a56a" onclick="markComplete('${w.id}')">✓ Complete</button>`:''} <button class="danger mini" onclick="deleteWork('${w.id}')">Delete</button></td></tr>`).join('')||'<tr><td colspan="12" class="empty">No work added yet. Click “Add Work”.</td></tr>'}
+function renderCustomers(){const q=($('customerSearch').value||'').toLowerCase(),map={};works.forEach(w=>{const k=w.phone||w.name;if(!map[k])map[k]={name:w.name,phone:w.phone,count:0,charge:0,paid:0,dues:[],statuses:[]};let c=map[k];c.count++;c.charge+=w.charge;c.paid+=w.paid;c.dues.push(w.charge-w.paid);c.statuses.push(w.status)});$('customerRows').innerHTML=Object.values(map).filter(c=>(c.name+' '+c.phone).toLowerCase().includes(q)).map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.phone)}</td><td>${c.count}</td><td>${ru(c.charge)}</td><td>${ru(c.paid)}</td><td>${ru(c.charge-c.paid)}</td><td>${esc([...new Set(c.statuses)].join(', '))}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">Customerों का डेटा Work जोड़ने पर दिखाई देगा।</td></tr>'}
+$('moneyForm').addEventListener('submit',e=>{e.preventDefault();money.unshift({id:id(),type:$('moneyType').value,date:$('moneyDate').value||today(),category:$('moneyCategory').value,amount:n($('moneyAmount').value),note:$('moneyNote').value.trim()});save('money',money);$('moneyForm').reset();$('moneyDate').value=today();refresh()});
+function renderMoney(){$('moneyRows').innerHTML=money.map(m=>`<tr><td>${esc(m.date)}</td><td>${m.type==='expense'?'Cost':'आय'}</td><td>${esc(m.category)}</td><td>${esc(m.note)}</td><td>${ru(m.amount)}</td><td><button class="danger mini" onclick="deleteMoney('${m.id}')">Delete</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">अभी आय/Cost का रिकॉर्ड नहीं है।</td></tr>'}
+function deleteMoney(idv){if(confirm('रिकॉर्ड हटाना है?')){money=money.filter(m=>m.id!==idv);persist()}}
+$('staffForm').addEventListener('submit',e=>{e.preventDefault();if(String($('sPassword').value||'').length<8){alert('Set a staff password of at least 8 characters.');return}staff.push({id:id(),name:$('sName').value.trim(),phone:$('sPhone').value.trim(),role:$('sRole').value.trim()||'Staff',date:$('sDate').value||today(),password:$('sPassword').value});save('staff',staff);$('staffForm').reset();$('sRole').value='Staff';persist()});
+function renderStaff(){populateStaff();$('staffRows').innerHTML=staff.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.phone)}</td><td>${esc(s.role)}</td><td>${esc(s.date)}</td><td><button class="danger mini" onclick="deleteStaff('${s.id}')">Delete</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">अभी Staff नहीं जोड़ा गया।</td></tr>'}
+function deleteStaff(idv){if(confirm('Staff रिकॉर्ड हटाना है?')){staff=staff.filter(s=>s.id!==idv);persist()}}
+function refresh(){const d=today(),todayWorks=works.filter(w=>w.date===d),todayPaid=todayWorks.reduce((a,w)=>a+w.paid,0),todayCost=money.filter(m=>m.date===d&&m.type==='expense').reduce((a,m)=>a+m.amount,0)+todayWorks.reduce((a,w)=>a+w.cost,0),due=works.reduce((a,w)=>a+w.charge-w.paid,0);$('mToday').textContent=todayWorks.length;$('mPending').textContent=works.filter(w=>w.status==='Pending').length;$('mProcessing').textContent=works.filter(w=>w.status==='Processing').length;$('mCompleted').textContent=works.filter(w=>w.status==='Completed').length;$('mIncome').textContent=ru(todayPaid);$('mExpense').textContent=ru(todayCost);$('mDue').textContent=ru(due);$('mCustomers').textContent=new Set(works.map(w=>w.phone||w.name)).size;$('sumFees').textContent=ru(todayWorks.reduce((a,w)=>a+w.charge,0));$('sumPaid').textContent=ru(todayPaid);$('sumNet').textContent=ru(todayPaid-todayCost);$('recentRows').innerHTML=works.slice(0,6).map(w=>`<tr><td>${esc(w.name)}</td><td>${esc(w.task)}</td><td>${badge(w.status)}</td><td>${ru(w.charge-w.paid)}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Work जोड़ने पर यहाँ दिखेंगे।</td></tr>';$('rWorks').textContent=works.length;$('rCharges').textContent=ru(works.reduce((a,w)=>a+w.charge,0));$('rPaid').textContent=ru(works.reduce((a,w)=>a+w.paid,0));$('rDue').textContent=ru(due);$('rExpenses').textContent=ru(money.filter(m=>m.type==='expense').reduce((a,m)=>a+m.amount,0)+works.reduce((a,w)=>a+w.cost,0));$('rComplete').textContent=works.filter(w=>w.status==='Completed').length;renderWork();renderCustomers();renderMoney();renderStaff()}
+function saveSettings(){settings.name=$('centerName').value.trim()||'Cyber Zone';settings.phone=$('centerPhone').value.trim();persist();alert('सेटिंग सेव हो गई।')}
+function exportCSV(){const rows=[['Date','Customer','Phone','Task','Reference','Charge','Paid','Due','Cost','Udhaar','Udhaar Paid','Status','Staff','Due Date','Notes'],...works.map(w=>[w.date,w.name,w.phone,w.task,w.ref,w.charge,w.paid,w.charge-w.paid,w.cost,w.udhaar||0,w.udhaarDone||'No',w.status,(staff.find(s=>s.id===w.staffId)||{}).name||'',w.dueDate||'',w.notes||''])];const csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');downloadBlob('\ufeff'+csv,'cyber-zone-work.csv','text/csv;charset=utf-8')}
+function downloadBlob(data,name,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href)}
+function downloadBackup(){downloadBlob(JSON.stringify({works,money,staff,settings,requests,version:2},null,2),'cyber-zone-backup-'+today()+'.json','application/json')}
+function restoreBackup(){const f=$('backupFile').files[0];if(!f){alert('पहले JSON backup फाइल चुनें।');return}const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.works)||!Array.isArray(d.money)||!Array.isArray(d.staff))throw Error();if(!confirm('Backup restore करने से वर्तमान डेटा बदल जाएगा। जारी रखें?'))return;works=d.works;money=d.money;staff=d.staff;settings=d.settings||settings;requests=Array.isArray(d.requests)?d.requests:[];persist();alert('Backup restore हो गया।')}catch{alert('यह सही Cyber Zone backup फाइल नहीं है।')}};r.readAsText(f)}
+function clearAll(){if(confirm('सावधान: सभी Work, आय/Cost और Staff डेटा इसी ब्राउज़र से स्थायी रूप से हट जाएगा। क्या आपने backup लिया है?')&&confirm('आखिरी पुष्टि: सारा डेटा मिटाएँ?')){works=[];money=[];staff=[];requests=[];persist()}}
+if(localStorage.getItem('cz_demo_logged_in')==='1')$('loginGate').classList.add('hidden');
+$('languageToggle')?.addEventListener('change',e=>{localStorage.setItem('cz_language',e.target.value);location.reload()});
+const savedLang=localStorage.getItem('cz_language')||'hi';if($('languageToggle'))$('languageToggle').value=savedLang;if(savedLang==='en')applyLanguage('en');
+
+$('pFiles')?.addEventListener('change',()=>{$('pFileNames').textContent=[...$('pFiles').files].map(f=>f.name+' ('+Math.ceil(f.size/1024)+' KB)').join(', ')});
+$('publicServiceForm')?.addEventListener('submit',e=>{
+ e.preventDefault();const files=[...$('pFiles').files];
+ if(!files.length){$('pMessage').textContent='कृपया दस्तावेज चुनें।';return;}
+ if(files.some(f=>f.size>2*1024*1024)){$('pMessage').textContent='हर फाइल 2 MB से कम रखें।';return;}
+ const req={id:id(),date:today(),name:$('pName').value.trim(),phone:$('pPhone').value.trim(),service:$('pService').value,details:$('pDetails').value.trim(),note:$('pNote').value.trim(),files:files.map(f=>({name:f.name,type:f.type,size:f.size})),status:'Pending Approval'};
+ requests.unshift(req);save('requests',requests);
+ $('pMessage').style.color='#067647';$('pMessage').textContent='आवेदन जमा हो गया। आवेदन संख्या: '+req.id;
+ $('publicServiceForm').reset();$('pFileNames').textContent='';
+});
+function renderRequests(){
+ const q=($('requestSearch')?.value||'').toLowerCase(),f=$('requestStatusFilter')?.value||'';
+ $('requestRows').innerHTML=requests.filter(r=>(!f||r.status===f)&&[r.name,r.phone,r.service,r.details].join(' ').toLowerCase().includes(q)).map(r=>`<tr><td>${esc(r.date)}</td><td><b>${esc(r.name)}</b><br>${esc(r.phone)}</td><td>${esc(r.service)}<br>${esc(r.details||'')}</td><td>${(r.files||[]).map(f=>esc(f.name)).join('<br>')||'—'}</td><td>${esc(r.status)}</td><td><button class="secondary mini" onclick="setRequestStatus('${r.id}','Approved')">Approve</button> <button class="danger mini" onclick="setRequestStatus('${r.id}','Rejected')">Reject</button> <button class="secondary mini" onclick="setRequestStatus('${r.id}','In Process')">Process</button> <button class="secondary mini" onclick="setRequestStatus('${r.id}','Completed')">Complete</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">अभी कोई आवेदन नहीं आया।</td></tr>';
+}
+function setRequestStatus(idv,status){const r=requests.find(x=>x.id===idv);if(!r)return;r.status=status;save('requests',requests);renderRequests();alert('आवेदन का स्टेटस '+status+' कर दिया गया।')}
+document.querySelector('.app').style.display='none';$('loginScreen').style.display='flex';$('publicServicePage').style.display='none';
+$('staffLoginOpen')?.addEventListener('click',()=>{$('publicServicePage').style.display='none';$('loginScreen').style.display='flex';});
+
+$('centerName').value=settings.name||'Cyber Zone';$('centerPhone').value=settings.phone||'';$('wDate').value=today();$('moneyDate').value=today();$('sDate').value=today();toggleWorkForm(false);refresh();
+</script>
+
+<script>
+(function(){
+ function getSavedCommissionPct(){try{return Math.max(0,Math.min(100,Number(localStorage.getItem('cyberZoneDefaultStaffCommissionPct')||0)));}catch(e){return 0;}}
+ window.saveDefaultStaffCommission=function(){
+   const el=document.getElementById('defaultStaffCommissionPct');
+   const base=document.getElementById('commissionBase');
+   if(!el)return;
+   const pct=Number(el.value);
+   if(!Number.isFinite(pct)||pct<0||pct>100){alert('Enter a commission percentage between 0 and 100.');return;}
+   try{localStorage.setItem('cyberZoneDefaultStaffCommissionPct',String(pct));localStorage.setItem('cyberZoneCommissionBase',base?base.value:'charge');}catch(e){}
+   alert('Staff commission settings saved.');
+ };
+ document.addEventListener('DOMContentLoaded',function(){
+   const el=document.getElementById('defaultStaffCommissionPct'),base=document.getElementById('commissionBase');
+   if(el)el.value=getSavedCommissionPct();
+   if(base){try{base.value=localStorage.getItem('cyberZoneCommissionBase')||'charge';}catch(e){}}
+ });
+})();
+</script>
+<script>
+// Make all compulsory fields visually obvious without changing the form's existing validation.
+(function markCompulsoryFields(){
+ const mark = () => {
+  document.querySelectorAll('label').forEach(label => {
+   const text=(label.textContent||'').trim();
+   const linked = label.htmlFor ? document.getElementById(label.htmlFor) : label.querySelector('input,select,textarea');
+   const isRequired = /\*/.test(text) || /\(required\)/i.test(text) || !!(linked && linked.required) || /User ID \/ Mobile Number|^Password$|Staff Password/i.test(text);
+   if(!isRequired) return;
+   label.classList.add('required-field');
+   if(!label.querySelector('.required-tag')) { const tag=document.createElement('span'); tag.className='required-tag'; tag.textContent='COMPULSORY'; label.appendChild(tag); }
+   const field=label.closest('.field') || label.parentElement;
+   if(field) field.classList.add('required-field-wrap');
+   if(linked && linked.type!=='checkbox') { linked.style.border='2px solid #e5484d'; linked.style.backgroundColor='#fffafa'; linked.setAttribute('aria-required','true'); }
+  });
+ };
+ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mark); else mark();
+})();
+</script>
+</body>
+</html>
