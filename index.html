@@ -81,32 +81,26 @@ body:not(.cz-authenticated) #loginScreen .cz-login-card,body:not(.cz-authenticat
 body:not(.cz-authenticated) .app{display:none!important}
 body.cz-authenticated #loginScreen{display:none!important}
 </style>
-<style id="cz-login-visibility-safety">
-body:not(.cz-authenticated) #loginScreen{display:flex!important;visibility:visible!important;opacity:1!important;position:fixed!important;inset:0!important;z-index:99999!important}
-body:not(.cz-authenticated) #loginScreen .cz-login-layout,
-body:not(.cz-authenticated) #loginScreen .cz-login-right,
-body:not(.cz-authenticated) #loginScreen .cz-login-card{visibility:visible!important;opacity:1!important}
-</style>
 <script id="cz-white-screen-recovery-startup">
 (function(){
-  // This script is in <head>, so wait until the body and login form exist.
-  function restoreLoginScreen(){
-    if (!document.body) return;
-    document.body.classList.remove('cz-authenticated');
+  // Run only after the body exists. Never touch document.body from the head parser.
+  function showInitialLogin(){
+    var body=document.body;
+    if(!body) return;
+    body.classList.remove('cz-authenticated');
     var app=document.querySelector('.app');
-    if(app){app.classList.add('hidden');app.style.setProperty('display','none','important');}
+    if(app){app.style.setProperty('display','none','important');}
     var login=document.getElementById('loginScreen');
     if(login){
       login.style.setProperty('display','flex','important');
       login.style.setProperty('visibility','visible','important');
       login.style.setProperty('opacity','1','important');
-      login.style.setProperty('z-index','99999','important');
     }
   }
   if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',restoreLoginScreen,{once:true});
+    document.addEventListener('DOMContentLoaded',showInitialLogin,{once:true});
   } else {
-    restoreLoginScreen();
+    showInitialLogin();
   }
 })();
 </script>
@@ -225,6 +219,31 @@ body:not(.cz-authenticated) #loginScreen .cz-login-card{visibility:visible!impor
  </div>
  </div>
 </div>
+<script id="cz-login-focus-safety">
+(function(){
+  function keepLoginVisible(){
+    var body=document.body;
+    var login=document.getElementById('loginScreen');
+    var app=document.querySelector('.app');
+    if(body && !body.classList.contains('cz-authenticated') && login){
+      login.style.setProperty('display','flex','important');
+      login.style.setProperty('visibility','visible','important');
+      login.style.setProperty('opacity','1','important');
+      if(app) app.style.setProperty('display','none','important');
+    }
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    ['loginId','loginPassword'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el){
+        el.addEventListener('focus',keepLoginVisible);
+        el.addEventListener('touchstart',keepLoginVisible,{passive:true});
+      }
+    });
+    keepLoginVisible();
+  },{once:true});
+})();
+</script>
 
 <div class="app">
 <aside class="sidebar">
