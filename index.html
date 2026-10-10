@@ -683,24 +683,21 @@ $('centerName').value=settings.name||'Cyber Zone';$('centerPhone').value=setting
 </script>
 
 <script>
-// Restore only a valid Supabase Management session; do not trust localStorage alone.
-supabaseClient.auth.getSession().then(async ({data,error})=>{
- if(error || !data?.session?.user) return;
- try {
-  const user=data.session.user;
-  if(user.id!==CZ_MANAGEMENT_UID){await supabaseClient.auth.signOut();return;}
-  let ownerId=CZ_MANAGEMENT_UID;
-  const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members').select('role,owner_id,active').eq('user_id',user.id).maybeSingle();
-  if(!memberError && membership){if(membership.active===false || membership.role!=='management'){await supabaseClient.auth.signOut();return;} ownerId=membership.owner_id||CZ_MANAGEMENT_UID;}
-  localStorage.setItem('cz_logged_role','Management'); localStorage.setItem('cz_logged_user',user.email||'');
-  try { await czCloudLoad(ownerId); czShowCloudStatus('Cloud sync connected.'); }
-  catch(cloudError){ console.error('Cloud load failed during session restore:',cloudError); czCloudReady=false; czShowCloudStatus('Signed in, but cloud sync failed: '+String(cloudError?.message||cloudError)+'. Local browser data is shown.',true); }
-  document.body.classList.add('cz-authenticated');
-  if($('loginScreen'))$('loginScreen').style.display='none'; if($('publicServicePage'))$('publicServicePage').style.display='none';
-  const app=document.querySelector('.app');if(app){app.classList.remove('hidden');app.style.setProperty('display','grid','important');}
-  try{applyRoleView();refresh();}catch(renderError){console.error('Dashboard render failed',renderError);czShowCloudStatus('Dashboard error: '+String(renderError?.message||renderError),true);}
- } catch(e){console.error('Session restore failed',e);}
-});
+// Keep the login screen visible on page refresh. Do not automatically hide it
+// based on a cached Supabase session; the dashboard must only appear after the user presses Login.
+(function(){
+  function showLogin(){
+    document.body.classList.remove('cz-authenticated');
+    const login=document.getElementById('loginScreen');
+    const pub=document.getElementById('publicServicePage');
+    const app=document.querySelector('.app');
+    if(login){login.style.setProperty('display','flex','important');login.style.setProperty('visibility','visible','important');login.style.setProperty('opacity','1','important');}
+    if(pub)pub.style.setProperty('display','none','important');
+    if(app)app.style.setProperty('display','none','important');
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',showLogin,{once:true});
+  else showLogin();
+})();
 </script>
 </body>
 </html>
