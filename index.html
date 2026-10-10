@@ -82,12 +82,12 @@ body:not(.cz-authenticated) .app{display:none!important}
 body.cz-authenticated #loginScreen{display:none!important}
 </style>
 <script id="cz-white-screen-recovery-startup">
-(function(){
-  // Clear stale visual-only login state; the Supabase session check below will restore a valid session.
+document.addEventListener('DOMContentLoaded', function(){
+  // Start on the login screen; the authenticated-session restore below may reveal the dashboard.
   document.body.classList.remove('cz-authenticated');
   var app=document.querySelector('.app'); if(app){app.style.setProperty('display','none','important');}
   var login=document.getElementById('loginScreen'); if(login){login.style.setProperty('display','flex','important');login.style.setProperty('visibility','visible','important');login.style.setProperty('opacity','1','important');}
-})();
+});
 </script>
 
 </head>
@@ -606,35 +606,7 @@ function exportPDF(){
   const table=rows.map((row,i)=>'<tr>'+row.map(cell=>i===0?'<th>'+esc(cell)+'</th>':'<td>'+esc(cell)+'</td>').join('')+'</tr>').join('');
   const win=window.open('','_blank');
   if(!win){alert('Allow pop-ups to download the PDF.');return;}
-  win.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Cyber Zone Report</title><style>body{font:12px Arial,sans-serif;color:#111;padding:18px}h1{font-size:20px;margin-bottom:4px}p{color:#555;margin-top:0}table{border-collapse:collapse;width:100%;font-size:9px}th,td{border:1px solid #bbb;padding:5px;text-align:left;overflow-wrap:anywhere}th{background:#f0f0f0} @page{size:landscape;margin:10mm} @media print{button{display:none}}</style></head><body><h1>Cyber Zone — Work Report</h1><p>Generated: '+esc(new Date().toLocaleString())+'</p><table>'+table+'</table><script>window.onload=()=>{window.print();};<\/script>
-<script id="cz-mobile-service-click-fix">
-(function(){
- function openPublicService(service){
-  const login=document.getElementById('loginScreen');
-  const pub=document.getElementById('publicServicePage');
-  const app=document.querySelector('.app');
-  if(!pub){console.error('Cyber Zone: publicServicePage not found');return;}
-  document.body.classList.remove('cz-authenticated');
-  if(app){app.style.setProperty('display','none','important');app.classList.add('hidden');}
-  if(login)login.style.setProperty('display','none','important');
-  pub.style.setProperty('display','block','important');
-  pub.style.setProperty('visibility','visible','important');
-  const sel=document.getElementById('pService');
-  if(service && sel){let opt=Array.from(sel.options).find(o=>o.text.trim().toLowerCase()===service.trim().toLowerCase()||o.value.trim().toLowerCase()===service.trim().toLowerCase());if(!opt){opt=document.createElement('option');opt.value=service;opt.textContent=service;sel.appendChild(opt);}sel.value=opt.value||service;sel.dispatchEvent(new Event('change',{bubbles:true}));}
-  pub.scrollIntoView({behavior:'smooth',block:'start'});
- }
- document.addEventListener('click',function(e){
-  const tile=e.target.closest('.cz-service-item[data-service]');
-  if(tile){e.preventDefault();openPublicService(tile.getAttribute('data-service')||'');return;}
-  const reg=e.target.closest('#publicRegistrationOpen');
-  if(reg){e.preventDefault();openPublicService('');return;}
-  const back=e.target.closest('#staffLoginOpen');
-  if(back){e.preventDefault();const pub=document.getElementById('publicServicePage');const login=document.getElementById('loginScreen');if(pub)pub.style.display='none';if(login)login.style.setProperty('display','flex','important');}
- },true);
-})();
-</script>
-
-</body></html>');
+  win.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Cyber Zone Report</title><style>body{font:12px Arial,sans-serif;color:#111;padding:18px}h1{font-size:20px;margin-bottom:4px}p{color:#555;margin-top:0}table{border-collapse:collapse;width:100%;font-size:9px}th,td{border:1px solid #bbb;padding:5px;text-align:left;overflow-wrap:anywhere}th{background:#f0f0f0} @page{size:landscape;margin:10mm} @media print{button{display:none}}</style></head><body><h1>Cyber Zone — Work Report</h1><p>Generated: '+esc(new Date().toLocaleString())+'</p><table>'+table+'</table><script>window.onload=()=>{window.print();};<\/script></body></html>');
   win.document.close();
 }
 function renderRequests(){
