@@ -369,12 +369,16 @@ $('loginBtn').addEventListener('click', async ()=>{
    localStorage.setItem('cz_logged_role',actualRole); localStorage.setItem('cz_logged_user',user.email||email); localStorage.setItem('cz_login_alias',loginId);
    // Show the dashboard only after authentication succeeds. Cloud-sync failure must not leave a blank white screen.
    try {
-     await czCloudLoad(ownerId);
-     czShowCloudStatus('Cloud sync connected.');
+     // Do not let a slow/unavailable cloud request freeze the whole login flow.
+     await Promise.race([
+       Promise.resolve().then(()=>czCloudLoad(ownerId)),
+       new Promise((_,reject)=>setTimeout(()=>reject(new Error('Cloud sync timed out; opening dashboard in local-safe mode.')),8000))
+     ]);
+     if(typeof czShowCloudStatus==='function') czShowCloudStatus('Cloud sync connected.');
    } catch(cloudError) {
      console.error('Cloud load failed after login:', cloudError);
      czCloudReady=false;
-     czShowCloudStatus('Logged in, but cloud sync failed: '+String(cloudError?.message||cloudError)+'. Local browser data is shown; check Supabase table permissions.', true);
+     if(typeof czShowCloudStatus==='function') czShowCloudStatus('Logged in, but cloud sync failed: '+String(cloudError?.message||cloudError)+'. Local browser data is shown; check Supabase table permissions.', true);
    }
    // Reveal the dashboard immediately after successful authentication; rendering errors must not blank the page.
    document.body.classList.add('cz-authenticated');
@@ -389,7 +393,7 @@ $('loginBtn').addEventListener('click', async ()=>{
    } catch(renderError) {
      console.error('Dashboard render failed after login:',renderError);
      if(app){app.classList.remove('hidden');app.style.setProperty('display','grid','important');}
-     czShowCloudStatus('Login successful, but some dashboard content could not load: '+String(renderError?.message||renderError),true);
+     if(typeof czShowCloudStatus==='function') czShowCloudStatus('Login successful, but some dashboard content could not load: '+String(renderError?.message||renderError),true);
      const title=$('pageTitle'); if(title)title.textContent='Dashboard';
      document.querySelectorAll('main section[id^="page-"]').forEach(section=>section.classList.add('hidden'));
      const dashboard=$('page-dashboard'); if(dashboard)dashboard.classList.remove('hidden');
@@ -624,7 +628,35 @@ function exportPDF(){
   const table=rows.map((row,i)=>'<tr>'+row.map(cell=>i===0?'<th>'+esc(cell)+'</th>':'<td>'+esc(cell)+'</td>').join('')+'</tr>').join('');
   const win=window.open('','_blank');
   if(!win){alert('Allow pop-ups to download the PDF.');return;}
-  win.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Cyber Zone Report</title><style>body{font:12px Arial,sans-serif;color:#111;padding:18px}h1{font-size:20px;margin-bottom:4px}p{color:#555;margin-top:0}table{border-collapse:collapse;width:100%;font-size:9px}th,td{border:1px solid #bbb;padding:5px;text-align:left;overflow-wrap:anywhere}th{background:#f0f0f0} @page{size:landscape;margin:10mm} @media print{button{display:none}}</style></head><body><h1>Cyber Zone — Work Report</h1><p>Generated: '+esc(new Date().toLocaleString())+'</p><table>'+table+'</table><script>window.onload=()=>{window.print();};<\/script></body></html>');
+  win.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Cyber Zone Report</title><style>body{font:12px Arial,sans-serif;color:#111;padding:18px}h1{font-size:20px;margin-bottom:4px}p{color:#555;margin-top:0}table{border-collapse:collapse;width:100%;font-size:9px}th,td{border:1px solid #bbb;padding:5px;text-align:left;overflow-wrap:anywhere}th{background:#f0f0f0} @page{size:landscape;margin:10mm} @media print{button{display:none}}</style></head><body><h1>Cyber Zone — Work Report</h1><p>Generated: '+esc(new Date().toLocaleString())+'</p><table>'+table+'</table><script>window.onload=()=>{window.print();};<\/script>
+<script id="cz-service-registration-click-safety">
+(function(){
+ function openRegistration(service){
+   const login=document.getElementById('loginScreen');
+   const pub=document.getElementById('publicServicePage');
+   const app=document.querySelector('.app');
+   document.body.classList.remove('cz-authenticated');
+   if(app){app.style.setProperty('display','none','important');app.classList.add('hidden');}
+   if(login)login.style.setProperty('display','none','important');
+   if(pub){pub.style.setProperty('display','block','important');pub.style.setProperty('visibility','visible','important');pub.scrollIntoView({behavior:'smooth',block:'start'});}
+   if(service){
+     const select=document.getElementById('pService');
+     if(select){let opt=Array.from(select.options).find(o=>o.text.trim().toLowerCase()===String(service).trim().toLowerCase()||o.value.trim().toLowerCase()===String(service).trim().toLowerCase());
+       if(!opt){opt=document.createElement('option');opt.value=service;opt.textContent=service;select.appendChild(opt);} select.value=opt.value||service; select.dispatchEvent(new Event('change',{bubbles:true}));}
+   }
+ }
+ document.addEventListener('click',function(e){
+   const tile=e.target.closest('.cz-service-item[data-service]');
+   if(tile){e.preventDefault();e.stopPropagation();openRegistration(tile.getAttribute('data-service'));return;}
+   const reg=e.target.closest('#publicRegistrationOpen');
+   if(reg){e.preventDefault();e.stopPropagation();openRegistration('');}
+ },true);
+ // Keep service tiles above decorative layers and tappable on mobile.
+ const css=document.createElement('style');css.textContent='.cz-service-item{position:relative!important;z-index:10001!important;pointer-events:auto!important;touch-action:manipulation!important}#publicRegistrationOpen{position:relative!important;z-index:10001!important;pointer-events:auto!important;touch-action:manipulation!important}';document.head.appendChild(css);
+})();
+</script>
+
+</body></html>');
   win.document.close();
 }
 function renderRequests(){
@@ -699,5 +731,33 @@ $('centerName').value=settings.name||'Cyber Zone';$('centerPhone').value=setting
   else showLogin();
 })();
 </script>
+
+<script id="cz-service-registration-click-safety">
+(function(){
+ function openRegistration(service){
+   const login=document.getElementById('loginScreen');
+   const pub=document.getElementById('publicServicePage');
+   const app=document.querySelector('.app');
+   document.body.classList.remove('cz-authenticated');
+   if(app){app.style.setProperty('display','none','important');app.classList.add('hidden');}
+   if(login)login.style.setProperty('display','none','important');
+   if(pub){pub.style.setProperty('display','block','important');pub.style.setProperty('visibility','visible','important');pub.scrollIntoView({behavior:'smooth',block:'start'});}
+   if(service){
+     const select=document.getElementById('pService');
+     if(select){let opt=Array.from(select.options).find(o=>o.text.trim().toLowerCase()===String(service).trim().toLowerCase()||o.value.trim().toLowerCase()===String(service).trim().toLowerCase());
+       if(!opt){opt=document.createElement('option');opt.value=service;opt.textContent=service;select.appendChild(opt);} select.value=opt.value||service; select.dispatchEvent(new Event('change',{bubbles:true}));}
+   }
+ }
+ document.addEventListener('click',function(e){
+   const tile=e.target.closest('.cz-service-item[data-service]');
+   if(tile){e.preventDefault();e.stopPropagation();openRegistration(tile.getAttribute('data-service'));return;}
+   const reg=e.target.closest('#publicRegistrationOpen');
+   if(reg){e.preventDefault();e.stopPropagation();openRegistration('');}
+ },true);
+ // Keep service tiles above decorative layers and tappable on mobile.
+ const css=document.createElement('style');css.textContent='.cz-service-item{position:relative!important;z-index:10001!important;pointer-events:auto!important;touch-action:manipulation!important}#publicRegistrationOpen{position:relative!important;z-index:10001!important;pointer-events:auto!important;touch-action:manipulation!important}';document.head.appendChild(css);
+})();
+</script>
+
 </body>
 </html>
