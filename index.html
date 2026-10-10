@@ -57,6 +57,29 @@ body.cz-authenticated .app{display:grid!important}
 #publicRegistrationOpen::after { content:' ★'; }
 #publicRegistrationOpen:focus-visible { outline:3px solid #222; outline-offset:3px; }
 /* Keep Service Registration blinking continuously as requested. */
+
+/* Login-only responsive layout and Hindi service highlights */
+.cz-login-layout{flex-direction:row;align-items:center;justify-content:center}
+.cz-login-promos{width:min(42vw,420px);max-width:420px;display:flex;flex-direction:column;gap:12px;padding:18px}
+.cz-promo-title{font-size:26px;font-weight:900;color:#175cd3;margin-bottom:4px}
+.cz-promo-item{font-size:18px;font-weight:900;color:#10213a;background:#fff;border:1px solid #d8e4f4;border-left:5px solid #175cd3;border-radius:10px;padding:13px 15px;animation:czPromoBlink 1.4s ease-in-out infinite}
+.cz-promo-item:nth-child(odd){animation-delay:.35s}
+@keyframes czPromoBlink{0%,100%{opacity:1;transform:translateX(0);box-shadow:0 0 0 rgba(23,92,211,0)}50%{opacity:.58;transform:translateX(4px);box-shadow:0 0 12px rgba(23,92,211,.22)}}
+.cz-login-card{flex:0 1 420px}
+@media(max-width:700px){
+ #loginScreen.cz-login-layout{flex-direction:column;justify-content:flex-start;align-items:stretch;gap:12px;padding:12px;overflow-y:auto}
+ #loginScreen .cz-login-promos{order:2;width:100%;max-width:none;padding:6px 2px;gap:7px}
+ #loginScreen .cz-login-card{order:1;flex:0 0 auto;width:100%!important;max-width:420px;margin:0 auto;padding:18px!important}
+ #loginScreen .cz-promo-title{font-size:19px;text-align:center;margin-bottom:0}
+ #loginScreen .cz-promo-item{font-size:14px;padding:9px 11px}
+}
+@media(min-width:701px){
+ #loginScreen.cz-login-layout{min-height:100vh}
+ #loginScreen .cz-login-promos{order:1}
+ #loginScreen .cz-login-card{order:2}
+}
+@media(prefers-reduced-motion:reduce){.cz-promo-item{animation:none}}
+
 </style>
 </head>
 <body>
@@ -91,8 +114,17 @@ body.cz-authenticated .app{display:grid!important}
  </div>
 </div>
 
-<div id="loginScreen" style="position:fixed;inset:0;z-index:9999;background:#eef3fb;display:flex;align-items:center;justify-content:center;padding:18px">
- <div style="background:white;width:min(100%,420px);border:1px solid #dce4ef;border-radius:18px;padding:24px;box-shadow:0 12px 40px #13294b18">
+<div id="loginScreen" class="cz-login-layout" style="position:fixed;inset:0;z-index:9999;background:#eef3fb;display:flex;align-items:center;justify-content:center;padding:18px;gap:28px;overflow:auto">
+  <aside class="cz-login-promos" aria-label="हमारी सेवाएँ">
+   <div class="cz-promo-title">हमारी सेवाएँ</div>
+   <div class="cz-promo-item">पासपोर्ट फोटो बनाना</div>
+   <div class="cz-promo-item">फोटो एडिटिंग मास्टर</div>
+   <div class="cz-promo-item">विज्ञापन डिजाइन</div>
+   <div class="cz-promo-item">विजिटिंग कार्ड डिजाइन मेकर</div>
+   <div class="cz-promo-item">ऑनलाइन फॉर्म और प्रिंटिंग</div>
+   <div class="cz-promo-item">दस्तावेज़ स्कैन एवं अपलोड</div>
+  </aside>
+  <div class="cz-login-card" style="background:white;width:min(100%,420px);border:1px solid #dce4ef;border-radius:18px;padding:24px;box-shadow:0 12px 40px #13294b18">
   <button type="button" id="publicRegistrationOpen" style="width:100%;padding:12px;margin-bottom:18px;border:0;border-radius:9px;background:#087f5b;color:white;font-weight:700;cursor:pointer">NEW SERVICE REGISTRATION</button>
   <h2 style="margin:0 0 5px;color:#152746">Cyber Zone Login</h2>
   <p style="color:#667085;margin:0 0 18px;font-size:14px">Only Management can log in using the Management ID and password.</p>
