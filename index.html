@@ -101,7 +101,10 @@ body.cz-authenticated .app{display:grid!important}
   <label style="display:block;font-size:13px;margin-bottom:6px">User ID / Mobile Number</label>
   <input id="loginId" autocomplete="off" placeholder="Enter your Management/Staff email" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px">
   <label style="display:block;font-size:13px;margin-bottom:6px">Password</label>
-  <input id="loginPassword" type="password" autocomplete="new-password" placeholder="Enter your password" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px">
+  <div style="display:flex;gap:6px;align-items:stretch;margin-bottom:12px">
+   <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter your password" style="flex:1;min-width:0;padding:11px;border:1px solid #ccd5e2;border-radius:8px">
+   <button type="button" id="toggleLoginPassword" aria-label="Show password" title="Show password" class="secondary" style="padding:0 13px;min-width:48px;border:1px solid #ccd5e2;border-radius:8px">👁</button>
+  </div>
   <button type="button" id="loginBtn" style="width:100%;padding:12px;border:0;border-radius:8px;background:#175cd3;color:white;font-weight:700">Login </button>
   <button type="button" id="forgotPasswordOpen" class="secondary" style="width:100%;margin-top:12px">Forgot Password?</button>
   <div id="forgotBox" style="display:none;margin-top:14px;padding:12px;border:1px solid #dce4ef;border-radius:10px"><b>Reset Password</b><p style="font-size:12px;color:#667085">Demo recovery uses the registered mobile number and recovery code. For a real public website, server-side OTP verification is required.</p><label style="display:block;font-size:13px;margin:8px 0 4px">Registered Mobile Number</label><input id="resetPhone" inputmode="numeric" maxlength="10" placeholder="7818942933" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px"><label style="display:block;font-size:13px;margin:8px 0 4px">Recovery Code</label><input id="resetCode" placeholder="Enter recovery code" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px"><label style="display:block;font-size:13px;margin:8px 0 4px">New Password</label><input id="resetNewPassword" type="password" minlength="8" placeholder="At least 8 characters" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px"><button type="button" id="resetPasswordBtn" style="width:100%;margin-top:10px">New Password  </button><div id="resetMessage" style="font-size:13px;margin-top:8px"></div></div>
@@ -122,7 +125,7 @@ body.cz-authenticated .app{display:grid!important}
     <button data-page="reports">▥ Reports</button>
     <button data-page="settings">⚙ Settings & Backup</button>
   </nav>
-  <div class="side-note">Cloud sync enabled · Keep regular backups of your Cyber Zone data.</div>
+  <div class="side-note">Cloud Sync enabled · Download backups regularly. Database backups must be configured separately.</div>
 </aside>
 <main>
   
@@ -130,7 +133,7 @@ body.cz-authenticated .app{display:grid!important}
     <div><h1 id="pageTitle">Dashboard</h1><div class="sub" id="todayLabel"></div></div>
     <div class="top-actions"><button class="secondary" onclick="logoutDemo()">Logout</button><button class="secondary" onclick="exportPDF()">Download PDF</button><button onclick="showPage('work');openWorkForm()">+ Add New Work</button></div>
   </div>
-  <div class="notice">Cloud sync status will appear here after Management or Staff signs in. Keep a separate backup regularly.</div>
+  <div class="notice">⚠️ <b>Important:</b> Starter version: data is saved in this browser on this device. Shared data across devices, secure login and automated SMS require an online backend/database and SMS gateway.</div>
 
   <section id="page-dashboard">
     <div id="staffPersonalSummary" class="cards" style="display:none;margin-bottom:16px"><div class="card"><div class="metric-label">Your Total Work</div><div class="metric" id="staffWorkCount">0</div></div><div class="card"><div class="metric-label">Your Commission</div><div class="metric" id="staffCommission">₹0</div></div><div class="card"><div class="metric-label">Your Net Profit</div><div class="metric" id="staffProfit">₹0</div></div></div>
@@ -208,7 +211,7 @@ body.cz-authenticated .app{display:grid!important}
   <section id="page-reports" class="hidden"><div class="panel"><div class="panel-head"><h2></h2><button class="secondary" onclick="exportPDF()">Download PDF</button></div><div class="report-grid"><div class="report-box">Total Work<b id="rWorks">0</b></div><div class="report-box"> Charge<b id="rCharges">₹0</b></div><div class="report-box"> Amount Received<b id="rPaid">₹0</b></div><div class="report-box"> <b id="rDue">₹0</b></div><div class="report-box">  Cost<b id="rExpenses">₹0</b></div><div class="report-box">Completed<b id="rComplete">0</b></div></div></div></section>
 
   <section id="page-settings" class="hidden"><div class="panel"><div class="panel-head"><h2>Settings & Backup</h2></div><div class="field"><label>  Name</label><input id="centerName" value="Cyber Zone"></div><div class="field"><label>  (SMS  )</label><input id="centerPhone" placeholder="   Mobile Number"></div><button onclick="saveSettings()">  </button> <button class="secondary" onclick="downloadBackup()"> Backup  </button><div style="margin-top:18px"><label>Backup      (JSON)</label><input type="file" id="backupFile" accept=".json,application/json"><button class="secondary" style="margin-top:8px" onclick="restoreBackup()">Backup Restore </button></div><hr style="border:0;border-top:1px solid var(--line);margin:20px 0"><div class="notice">     :  HTML  hosting       database,  login, scheduled SMS, delivery reports  automatic pending reminders  backend/API configuration     </div><button class="danger" onclick="clearAll()">   </button></div></section>
-  <footer class="muted" style="font-size:12px;padding:10px 2px">Cyber Zone Management · Starter website ·   Backup </footer>
+  <footer class="muted" style="font-size:12px;padding:10px 2px">Cyber Zone Management · Cloud Sync · Download backups regularly</footer>
 </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -223,7 +226,18 @@ const CZ_STATE_KEYS = ["works", "money", "staff", "settings", "requests"];
 const $=id=>document.getElementById(id);
 
 
-// Supabase Authentication. Each account must be provisioned in Supabase Auth and assigned a row in public.cz_org_members.
+// Password visibility toggle and clearer role-specific login hints.
+$('toggleLoginPassword')?.addEventListener('click',()=>{
+ const input=$('loginPassword'),button=$('toggleLoginPassword'); if(!input||!button)return;
+ const show=input.type==='password'; input.type=show?'text':'password';
+ button.textContent=show?'🙈':'👁'; button.setAttribute('aria-label',show?'Hide password':'Show password'); button.title=show?'Hide password':'Show password';
+});
+$('loginRole')?.addEventListener('change',()=>{
+ const field=$('loginId'); if(!field)return;
+ field.placeholder=$('loginRole').value==='Staff'?'Enter the staff email registered in Supabase Auth':'Enter the Management email registered in Supabase Auth';
+});
+
+// Supabase Authentication. Management and Staff accounts must exist in Supabase Auth and have an active row in public.cz_org_members.
 $('loginBtn').addEventListener('click', async ()=>{
  const email=String($('loginId')?.value||'').trim().toLowerCase();
  const password=String($('loginPassword')?.value||'');
@@ -246,7 +260,15 @@ $('loginBtn').addEventListener('click', async ()=>{
    if(gate)gate.style.display='none'; if(pub)pub.style.display='none'; if(app){app.classList.remove('hidden');app.style.display='grid';}
    await czCloudLoad(membership.owner_id);
    applyRoleView(); refresh(); if(err)err.textContent='';
- } catch(e) { if(err)err.textContent='Login failed: '+(e.message||'Please check your email, password, and Management access setup.'); }
+ } catch(e) {
+   if(err){
+     const detail=String(e?.message||'');
+     err.textContent='Login failed: '+(detail||'Check the account email and password.');
+     if(selectedRole==='Staff' && /Invalid login credentials|User not found|not enabled by Management|row-level security|permission/i.test(detail)){
+       err.textContent+=' Staff login requires a Staff user created in Supabase Authentication and an active Staff entry in public.cz_org_members. A name/phone/password saved only in Staff Management is not enough for secure login on multiple phones.';
+     }
+   }
+ }
 });
 $('forgotPasswordOpen').addEventListener('click',()=>{
  const box=$('forgotBox');if(box)box.style.display=box.style.display==='none'?'block':'none';
@@ -274,7 +296,7 @@ const load=(k,d)=>{try{return JSON.parse(localStorage.getItem('cz_'+k))??d}catch
 const save=(k,v)=>{
   localStorage.setItem('cz_'+k,JSON.stringify(v));
   if(czCloudReady && CZ_STATE_KEYS.includes(k)) {
-    czCloudSave(k,v).then(()=>czShowCloudStatus('Cloud sync saved: '+k))
+    czCloudSave(k,v).then(()=>czShowCloudStatus('Online backup updated.'))
       .catch(e=>{console.error('Cloud save failed',e);czShowCloudStatus('Cloud save failed: '+(e?.message||e),true);});
   }
 };
@@ -284,34 +306,23 @@ function czShowCloudStatus(message,isError=false){
   el.textContent=message;el.style.background=isError?'#fff1f0':'#ecfdf3';el.style.color=isError?'#b42318':'#067647';
 }
 let works=load('works',[]), money=load('money',[]), staff=load('staff',[]), settings=load('settings',{name:'Cyber Zone',phone:''}), requests=load('requests',[]);
-function czHasUsefulData(key,value){
-  if(key==='settings') return !!(value && typeof value==='object' && (String(value.name||'').trim() && String(value.name).trim()!=='Cyber Zone' || String(value.phone||'').trim()));
-  return Array.isArray(value) ? value.length>0 : !!(value && typeof value==='object' && Object.keys(value).length>0);
-}
 async function czCloudLoad(ownerId){
  const {data,error}=await supabaseClient.from('cz_app_state').select('state_key,state_json').eq('owner_id',ownerId);
  if(error) throw error;
  const rows=data||[];
- const cloudMap=new Map(rows.filter(r=>CZ_STATE_KEYS.includes(r.state_key)).map(r=>[r.state_key,r.state_json]));
- const defaults={works:[],money:[],staff:[],settings:{name:'Cyber Zone',phone:''},requests:[]};
- // Never overwrite useful browser data with an empty cloud value. Upload local data when cloud is empty.
- czCloudReady=false;
- const toUpload=[];
- for(const key of CZ_STATE_KEYS){
-   const localValue=load(key,defaults[key]);
-   const hasCloud=cloudMap.has(key);
-   const cloudValue=cloudMap.get(key);
-   if(!hasCloud || (!czHasUsefulData(key,cloudValue) && czHasUsefulData(key,localValue))){
-     localStorage.setItem('cz_'+key,JSON.stringify(localValue));
-     toUpload.push([key,localValue]);
-   } else {
-     localStorage.setItem('cz_'+key,JSON.stringify(cloudValue));
-   }
+ // First-login migration: if this organization has no cloud state yet, upload the current browser's saved data.
+ if(rows.length===0){
+   const localState={works:load('works',[]),money:load('money',[]),staff:load('staff',[]),settings:load('settings',{name:'Cyber Zone',phone:''}),requests:load('requests',[])};
+   czCloudReady=true;
+   for(const key of CZ_STATE_KEYS){await czCloudSave(key,localState[key]);}
+ } else {
+   for(const row of rows){if(CZ_STATE_KEYS.includes(row.state_key)){localStorage.setItem('cz_'+row.state_key,JSON.stringify(row.state_json));}}
+   // Fill any state keys not yet present in the cloud from this browser's saved values.
+   const cloudKeys=new Set(rows.map(row=>row.state_key));
+   czCloudReady=true;
+   for(const key of CZ_STATE_KEYS){if(!cloudKeys.has(key)){await czCloudSave(key,load(key,key==='settings'?{name:'Cyber Zone',phone:''}:[]));}}
  }
- works=load('works',[]); money=load('money',[]); staff=load('staff',[]); settings=load('settings',defaults.settings); requests=load('requests',[]);
- czCloudReady=true;
- for(const [key,value] of toUpload) await czCloudSave(key,value);
- czShowCloudStatus('Cloud sync connected. Data is saved to Supabase when changes are made.');
+ works=load('works',[]); money=load('money',[]); staff=load('staff',[]); settings=load('settings',{name:'Cyber Zone',phone:''}); requests=load('requests',[]);
 }
 async function czCloudSave(key,value){
  const {data:authData,error:authError}=await supabaseClient.auth.getUser();
@@ -356,7 +367,14 @@ function askStatusSMS(w){if(!w.phone)return;const msg=` ${w.name}, ${w.task}   :
 function editWork(idv){const w=works.find(x=>x.id===idv);if(!w)return;showPage('work');toggleWorkForm(true);populateStaff();$('workFormTitle').textContent='Edit Work';$('workId').value=w.id;$('wName').value=w.name;$('wPhone').value=w.phone;$('wTask').value=w.task;$('wRef').value=w.ref||'';$('wCharge').value=w.charge;$('wPaid').value=w.paid;$('wCost').value=w.cost;$('wCommission').value=w.commission||0;if($('wUdhaar'))$('wUdhaar').value=w.udhaar||0;if($('wUdhaarDone'))$('wUdhaarDone').value=w.udhaarDone||'No';$('wStatus').value=w.status;$('wDate').value=w.date;$('wDueDate').value=w.dueDate||'';$('wStaff').value=w.staffId||'';$('wNotes').value=w.notes||'';window.scrollTo({top:0,behavior:'smooth'})}
 function markComplete(idv){const w=works.find(x=>x.id===idv);if(!w)return;if(!confirm(` ${w.name}  Work Completed  ?`))return;const old=w.status;w.status='Completed';w.updated=new Date().toISOString();persist();if(old!=='Completed')askStatusSMS(w)}
 function markUdhaarDone(idv){const w=works.find(x=>x.id===idv);if(!w)return;if(confirm(' Customer  /Balance       ?')){w.udhaarDone='Yes';w.udhaarPaidDate=today();persist()}}
-function deleteWork(idv){if(confirm('  Work    ?')){works=works.filter(w=>w.id!==idv);persist()}}
+function czIsManagement(){return String(localStorage.getItem('cz_logged_role')||'').trim().toLowerCase()==='management';}
+function czConfirmDelete(label){
+  if(!czIsManagement()){alert('Only Management can delete records.');return false;}
+  if(!confirm('Management approval required. Delete '+label+'? This action will sync to all devices.')) return false;
+  const typed=prompt('Type DELETE to confirm. A database backup must be configured separately for recovery.');
+  return typed==='DELETE';
+}
+function deleteWork(idv){if(czConfirmDelete('this work record')){works=works.filter(w=>w.id!==idv);persist()}}
 
 function renderCommissionSummary(){
  const month=today().slice(0,7), current=visibleWorks().filter(w=>String(w.date||'').slice(0,7)===month);
@@ -371,10 +389,10 @@ function renderWork(){renderCommissionSummary();const q=($('workSearch').value||
 function renderCustomers(){const q=($('customerSearch').value||'').toLowerCase(),map={};works.forEach(w=>{const k=w.phone||w.name;if(!map[k])map[k]={name:w.name,phone:w.phone,count:0,charge:0,paid:0,dues:[],statuses:[]};let c=map[k];c.count++;c.charge+=w.charge;c.paid+=w.paid;c.dues.push(w.charge-w.paid);c.statuses.push(w.status)});$('customerRows').innerHTML=Object.values(map).filter(c=>(c.name+' '+c.phone).toLowerCase().includes(q)).map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.phone)}</td><td>${c.count}</td><td>${ru(c.charge)}</td><td>${ru(c.paid)}</td><td>${ru(c.charge-c.paid)}</td><td>${esc([...new Set(c.statuses)].join(', '))}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">Customer data will appear when work is added.</td></tr>'}
 $('moneyForm').addEventListener('submit',e=>{e.preventDefault();money.unshift({id:id(),type:$('moneyType').value,date:$('moneyDate').value||today(),category:$('moneyCategory').value,amount:n($('moneyAmount').value),note:$('moneyNote').value.trim()});save('money',money);$('moneyForm').reset();$('moneyDate').value=today();refresh()});
 function renderMoney(){$('moneyRows').innerHTML=money.map(m=>`<tr><td>${esc(m.date)}</td><td>${m.type==='expense'?'Cost':''}</td><td>${esc(m.category)}</td><td>${esc(m.note)}</td><td>${ru(m.amount)}</td><td><button class="danger mini" onclick="deleteMoney('${m.id}')">Delete</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty"> /Cost    </td></tr>'}
-function deleteMoney(idv){if(confirm('  ?')){money=money.filter(m=>m.id!==idv);persist()}}
+function deleteMoney(idv){if(czConfirmDelete('this money record')){money=money.filter(m=>m.id!==idv);persist()}}
 $('staffForm').addEventListener('submit',e=>{e.preventDefault();if(String($('sPassword').value||'').length<8){alert('Set a staff password of at least 8 characters.');return}staff.push({id:id(),name:$('sName').value.trim(),phone:$('sPhone').value.trim(),role:$('sRole').value.trim()||'Staff',date:$('sDate').value||today(),password:$('sPassword').value});save('staff',staff);$('staffForm').reset();$('sRole').value='Staff';persist()});
 function renderStaff(){populateStaff();$('staffRows').innerHTML=staff.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.phone)}</td><td>${esc(s.role)}</td><td>${esc(s.date)}</td><td><button class="danger mini" onclick="deleteStaff('${s.id}')">Delete</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">No staff added yet.</td></tr>'}
-function deleteStaff(idv){if(String(localStorage.getItem('cz_logged_role')||'').toLowerCase()==='staff'){alert('Only Management can delete staff.');return;}if(confirm('Delete this staff member?')){staff=staff.filter(s=>s.id!==idv);persist()}}
+function deleteStaff(idv){if(czConfirmDelete('this staff member')){staff=staff.filter(s=>s.id!==idv);persist()}}
 function refresh(){const all=works,ws=visibleWorks(),d=today(),todayWorks=ws.filter(w=>w.date===d),todayPaid=todayWorks.reduce((a,w)=>a+n(w.paid),0),todayCost=todayWorks.reduce((a,w)=>a+n(w.cost),0),due=ws.reduce((a,w)=>a+n(w.charge)-n(w.paid),0);$('mToday').textContent=todayWorks.length;$('mPending').textContent=ws.filter(w=>w.status==='Pending').length;$('mProcessing').textContent=ws.filter(w=>w.status==='Processing').length;$('mCompleted').textContent=ws.filter(w=>w.status==='Completed').length;$('mIncome').textContent=ru(todayPaid);$('mExpense').textContent=ru(todayCost);$('mDue').textContent=ru(due);$('mCustomers').textContent=new Set(ws.map(w=>w.phone||w.name)).size;$('sumFees').textContent=ru(todayWorks.reduce((a,w)=>a+n(w.charge),0));$('sumPaid').textContent=ru(todayPaid);$('sumNet').textContent=ru(todayWorks.reduce((a,w)=>a+n(w.charge)-n(w.cost)-n(w.commission),0));$('recentRows').innerHTML=ws.slice(0,6).map(w=>`<tr><td>${esc(w.name||'-')}</td><td>${esc(w.task||'')}</td><td>${badge(w.status)}</td><td>${ru(n(w.charge)-n(w.paid))}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">No work recorded yet.</td></tr>';$('rWorks').textContent=ws.length;$('rCharges').textContent=ru(ws.reduce((a,w)=>a+n(w.charge),0));$('rPaid').textContent=ru(ws.reduce((a,w)=>a+n(w.paid),0));$('rDue').textContent=ru(due);$('rExpenses').textContent=ru(ws.reduce((a,w)=>a+n(w.cost),0));$('rComplete').textContent=ws.filter(w=>w.status==='Completed').length;renderWork();if(localStorage.getItem('cz_logged_role')!=='Staff'){renderCustomers();renderMoney();renderStaff();}}
 function downloadBackup(){
   try {
@@ -436,6 +454,19 @@ function restoreBackup(){
   reader.onerror=()=>alert('Could not read the selected backup file.');
   reader.readAsText(file);
 }
+
+// Destructive reset is Management-only and requires a typed phrase.
+// Configure the Supabase database backup trigger before relying on recoverability.
+function clearAll(){
+  if(!czIsManagement()){alert('Only Management can clear data.');return;}
+  if(!confirm('WARNING: This will clear all Cyber Zone records and sync the empty state to the cloud. Continue only if a current backup exists.')) return;
+  const typed=prompt('Type CLEAR ALL DATA to confirm this destructive action.');
+  if(typed!=='CLEAR ALL DATA'){alert('Cancelled. No data was changed.');return;}
+  works=[]; money=[]; staff=[]; requests=[];
+  persist();
+  alert('Data cleared. If database backup protection is configured, previous cloud versions may be recoverable. Download a backup before any reset in future.');
+}
+
 function saveSettings(){settings.name=$('centerName').value.trim()||'Cyber Zone';settings.phone=$('centerPhone').value.trim();persist();alert('Settings saved.')}
 function exportPDF(){
   const rows=[['Date','Customer','Phone','Task','Reference','Charge','Paid','Due','Cost','Outstanding','Outstanding Paid','Status','Staff','Due Date','Notes'],...works.map(w=>[w.date,w.name,w.phone,w.task,w.ref,w.charge,w.paid,Number(w.charge||0)-Number(w.paid||0),w.cost,w.udhaar||0,w.udhaarDone||'No',w.status,(staff.find(x=>String(x.id)===String(w.staffId))||{}).name||w.staff||'',w.dueDate||'',w.notes||''])];
