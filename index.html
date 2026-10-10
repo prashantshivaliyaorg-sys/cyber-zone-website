@@ -64,6 +64,13 @@ body.cz-authenticated .app{display:grid!important}
 .cz-login-field .cz-required-star{display:inline-block!important;color:#d92d20!important;font-size:15px!important;line-height:8px!important}
 .cz-login-field input::placeholder{opacity:1;color:#667085}
 </style>
+
+<style id="cz-dashboard-after-login-failsafe">
+body.cz-authenticated .app{display:grid!important;visibility:visible!important;min-height:100vh!important}
+body.cz-authenticated .app main{display:block!important;visibility:visible!important;min-width:0!important}
+body.cz-authenticated #loginScreen,body.cz-authenticated #publicServicePage{display:none!important}
+</style>
+
 </head>
 <body>
 <div id="loginGate" style="display:none">
@@ -332,10 +339,24 @@ $('loginBtn').addEventListener('click', async ()=>{
      czCloudReady=false;
      czShowCloudStatus('Logged in, but cloud sync failed: '+String(cloudError?.message||cloudError)+'. Local browser data is shown; check Supabase table permissions.', true);
    }
+   // Reveal the dashboard immediately after successful authentication; rendering errors must not blank the page.
    document.body.classList.add('cz-authenticated');
    const gate=$('loginScreen'),pub=$('publicServicePage'),app=document.querySelector('.app');
-   if(gate)gate.style.display='none'; if(pub)pub.style.display='none'; if(app){app.classList.remove('hidden');app.style.display='grid';}
-   applyRoleView(); refresh(); if(err)err.textContent='';
+   if(gate)gate.style.display='none';
+   if(pub)pub.style.display='none';
+   if(app){app.classList.remove('hidden');app.style.setProperty('display','grid','important');app.style.visibility='visible';}
+   try {
+     if(typeof applyRoleView==='function') applyRoleView();
+     if(typeof refresh==='function') refresh();
+     if(err)err.textContent='';
+   } catch(renderError) {
+     console.error('Dashboard render failed after login:',renderError);
+     if(app){app.classList.remove('hidden');app.style.setProperty('display','grid','important');}
+     czShowCloudStatus('Login successful, but some dashboard content could not load: '+String(renderError?.message||renderError),true);
+     const title=$('pageTitle'); if(title)title.textContent='Dashboard';
+     document.querySelectorAll('main section[id^="page-"]').forEach(section=>section.classList.add('hidden'));
+     const dashboard=$('page-dashboard'); if(dashboard)dashboard.classList.remove('hidden');
+   }
  } catch(e) {
    // Keep the login screen visible for authentication/authorization errors.
    document.body.classList.remove('cz-authenticated');
