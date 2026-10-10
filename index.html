@@ -80,31 +80,13 @@ body:not(.cz-authenticated) #loginScreen .cz-login-layout{display:grid!important
 body:not(.cz-authenticated) #loginScreen .cz-login-card,body:not(.cz-authenticated) #loginScreen .cz-login-services{background:#fff!important;color:#182230!important}
 body:not(.cz-authenticated) .app{display:none!important}
 body.cz-authenticated #loginScreen{display:none!important}
-
-/* Mobile Chrome focus/keyboard repaint safety: keep login visible while fields receive focus. */
-@media(max-width:760px){
- html,body{width:100%;min-height:100%;overflow-x:hidden!important}
- #loginScreen{position:fixed!important;inset:0!important;width:100%!important;min-height:100dvh!important;height:100dvh!important;display:flex!important;overflow-y:auto!important;overscroll-behavior:contain;transform:translateZ(0);-webkit-transform:translateZ(0)}
- #loginScreen input,#loginScreen button{touch-action:manipulation}
- #loginScreen input:focus{scroll-margin:18px;position:relative;z-index:100001}
- .cz-service-item{animation:none!important;transform:none!important}
- .cz-login-services{max-height:none!important}
-}
 </style>
 <script id="cz-white-screen-recovery-startup">
-// This script is in <head>, so wait until <body> and the login markup exist.
 (function(){
- function restoreLoginScreen(){
-  try {
-   var body=document.body; if(!body) return;
-   body.classList.remove('cz-authenticated');
-   var app=document.querySelector('.app'); if(app) app.style.setProperty('display','none','important');
-   var login=document.getElementById('loginScreen');
-   if(login){login.style.setProperty('display','flex','important');login.style.setProperty('visibility','visible','important');login.style.setProperty('opacity','1','important');}
-  } catch(e){ console.error('Login startup error:',e); }
- }
- if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',restoreLoginScreen,{once:true});
- else restoreLoginScreen();
+  // Clear stale visual-only login state; the Supabase session check below will restore a valid session.
+  document.body.classList.remove('cz-authenticated');
+  var app=document.querySelector('.app'); if(app){app.style.setProperty('display','none','important');}
+  var login=document.getElementById('loginScreen'); if(login){login.style.setProperty('display','flex','important');login.style.setProperty('visibility','visible','important');login.style.setProperty('opacity','1','important');}
 })();
 </script>
 
@@ -369,16 +351,12 @@ $('loginBtn').addEventListener('click', async ()=>{
    localStorage.setItem('cz_logged_role',actualRole); localStorage.setItem('cz_logged_user',user.email||email); localStorage.setItem('cz_login_alias',loginId);
    // Show the dashboard only after authentication succeeds. Cloud-sync failure must not leave a blank white screen.
    try {
-     // Do not let a slow/unavailable cloud request freeze the whole login flow.
-     await Promise.race([
-       Promise.resolve().then(()=>czCloudLoad(ownerId)),
-       new Promise((_,reject)=>setTimeout(()=>reject(new Error('Cloud sync timed out; opening dashboard in local-safe mode.')),8000))
-     ]);
-     if(typeof czShowCloudStatus==='function') czShowCloudStatus('Cloud sync connected.');
+     await czCloudLoad(ownerId);
+     czShowCloudStatus('Cloud sync connected.');
    } catch(cloudError) {
      console.error('Cloud load failed after login:', cloudError);
      czCloudReady=false;
-     if(typeof czShowCloudStatus==='function') czShowCloudStatus('Logged in, but cloud sync failed: '+String(cloudError?.message||cloudError)+'. Local browser data is shown; check Supabase table permissions.', true);
+     czShowCloudStatus('Logged in, but cloud sync failed: '+String(cloudError?.message||cloudError)+'. Local browser data is shown; check Supabase table permissions.', true);
    }
    // Reveal the dashboard immediately after successful authentication; rendering errors must not blank the page.
    document.body.classList.add('cz-authenticated');
@@ -393,7 +371,7 @@ $('loginBtn').addEventListener('click', async ()=>{
    } catch(renderError) {
      console.error('Dashboard render failed after login:',renderError);
      if(app){app.classList.remove('hidden');app.style.setProperty('display','grid','important');}
-     if(typeof czShowCloudStatus==='function') czShowCloudStatus('Login successful, but some dashboard content could not load: '+String(renderError?.message||renderError),true);
+     czShowCloudStatus('Login successful, but some dashboard content could not load: '+String(renderError?.message||renderError),true);
      const title=$('pageTitle'); if(title)title.textContent='Dashboard';
      document.querySelectorAll('main section[id^="page-"]').forEach(section=>section.classList.add('hidden'));
      const dashboard=$('page-dashboard'); if(dashboard)dashboard.classList.remove('hidden');
@@ -629,30 +607,30 @@ function exportPDF(){
   const win=window.open('','_blank');
   if(!win){alert('Allow pop-ups to download the PDF.');return;}
   win.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Cyber Zone Report</title><style>body{font:12px Arial,sans-serif;color:#111;padding:18px}h1{font-size:20px;margin-bottom:4px}p{color:#555;margin-top:0}table{border-collapse:collapse;width:100%;font-size:9px}th,td{border:1px solid #bbb;padding:5px;text-align:left;overflow-wrap:anywhere}th{background:#f0f0f0} @page{size:landscape;margin:10mm} @media print{button{display:none}}</style></head><body><h1>Cyber Zone — Work Report</h1><p>Generated: '+esc(new Date().toLocaleString())+'</p><table>'+table+'</table><script>window.onload=()=>{window.print();};<\/script>
-<script id="cz-service-registration-click-safety">
+<script id="cz-mobile-service-click-fix">
 (function(){
- function openRegistration(service){
-   const login=document.getElementById('loginScreen');
-   const pub=document.getElementById('publicServicePage');
-   const app=document.querySelector('.app');
-   document.body.classList.remove('cz-authenticated');
-   if(app){app.style.setProperty('display','none','important');app.classList.add('hidden');}
-   if(login)login.style.setProperty('display','none','important');
-   if(pub){pub.style.setProperty('display','block','important');pub.style.setProperty('visibility','visible','important');pub.scrollIntoView({behavior:'smooth',block:'start'});}
-   if(service){
-     const select=document.getElementById('pService');
-     if(select){let opt=Array.from(select.options).find(o=>o.text.trim().toLowerCase()===String(service).trim().toLowerCase()||o.value.trim().toLowerCase()===String(service).trim().toLowerCase());
-       if(!opt){opt=document.createElement('option');opt.value=service;opt.textContent=service;select.appendChild(opt);} select.value=opt.value||service; select.dispatchEvent(new Event('change',{bubbles:true}));}
-   }
+ function openPublicService(service){
+  const login=document.getElementById('loginScreen');
+  const pub=document.getElementById('publicServicePage');
+  const app=document.querySelector('.app');
+  if(!pub){console.error('Cyber Zone: publicServicePage not found');return;}
+  document.body.classList.remove('cz-authenticated');
+  if(app){app.style.setProperty('display','none','important');app.classList.add('hidden');}
+  if(login)login.style.setProperty('display','none','important');
+  pub.style.setProperty('display','block','important');
+  pub.style.setProperty('visibility','visible','important');
+  const sel=document.getElementById('pService');
+  if(service && sel){let opt=Array.from(sel.options).find(o=>o.text.trim().toLowerCase()===service.trim().toLowerCase()||o.value.trim().toLowerCase()===service.trim().toLowerCase());if(!opt){opt=document.createElement('option');opt.value=service;opt.textContent=service;sel.appendChild(opt);}sel.value=opt.value||service;sel.dispatchEvent(new Event('change',{bubbles:true}));}
+  pub.scrollIntoView({behavior:'smooth',block:'start'});
  }
  document.addEventListener('click',function(e){
-   const tile=e.target.closest('.cz-service-item[data-service]');
-   if(tile){e.preventDefault();e.stopPropagation();openRegistration(tile.getAttribute('data-service'));return;}
-   const reg=e.target.closest('#publicRegistrationOpen');
-   if(reg){e.preventDefault();e.stopPropagation();openRegistration('');}
+  const tile=e.target.closest('.cz-service-item[data-service]');
+  if(tile){e.preventDefault();openPublicService(tile.getAttribute('data-service')||'');return;}
+  const reg=e.target.closest('#publicRegistrationOpen');
+  if(reg){e.preventDefault();openPublicService('');return;}
+  const back=e.target.closest('#staffLoginOpen');
+  if(back){e.preventDefault();const pub=document.getElementById('publicServicePage');const login=document.getElementById('loginScreen');if(pub)pub.style.display='none';if(login)login.style.setProperty('display','flex','important');}
  },true);
- // Keep service tiles above decorative layers and tappable on mobile.
- const css=document.createElement('style');css.textContent='.cz-service-item{position:relative!important;z-index:10001!important;pointer-events:auto!important;touch-action:manipulation!important}#publicRegistrationOpen{position:relative!important;z-index:10001!important;pointer-events:auto!important;touch-action:manipulation!important}';document.head.appendChild(css);
 })();
 </script>
 
@@ -715,47 +693,50 @@ $('centerName').value=settings.name||'Cyber Zone';$('centerPhone').value=setting
 </script>
 
 <script>
-// Keep the login screen visible on page refresh. Do not automatically hide it
-// based on a cached Supabase session; the dashboard must only appear after the user presses Login.
-(function(){
-  function showLogin(){
-    document.body.classList.remove('cz-authenticated');
-    const login=document.getElementById('loginScreen');
-    const pub=document.getElementById('publicServicePage');
-    const app=document.querySelector('.app');
-    if(login){login.style.setProperty('display','flex','important');login.style.setProperty('visibility','visible','important');login.style.setProperty('opacity','1','important');}
-    if(pub)pub.style.setProperty('display','none','important');
-    if(app)app.style.setProperty('display','none','important');
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',showLogin,{once:true});
-  else showLogin();
-})();
+// Restore only a valid Supabase Management session; do not trust localStorage alone.
+supabaseClient.auth.getSession().then(async ({data,error})=>{
+ if(error || !data?.session?.user) return;
+ try {
+  const user=data.session.user;
+  if(user.id!==CZ_MANAGEMENT_UID){await supabaseClient.auth.signOut();return;}
+  let ownerId=CZ_MANAGEMENT_UID;
+  const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members').select('role,owner_id,active').eq('user_id',user.id).maybeSingle();
+  if(!memberError && membership){if(membership.active===false || membership.role!=='management'){await supabaseClient.auth.signOut();return;} ownerId=membership.owner_id||CZ_MANAGEMENT_UID;}
+  localStorage.setItem('cz_logged_role','Management'); localStorage.setItem('cz_logged_user',user.email||'');
+  try { await czCloudLoad(ownerId); czShowCloudStatus('Cloud sync connected.'); }
+  catch(cloudError){ console.error('Cloud load failed during session restore:',cloudError); czCloudReady=false; czShowCloudStatus('Signed in, but cloud sync failed: '+String(cloudError?.message||cloudError)+'. Local browser data is shown.',true); }
+  document.body.classList.add('cz-authenticated');
+  if($('loginScreen'))$('loginScreen').style.display='none'; if($('publicServicePage'))$('publicServicePage').style.display='none';
+  const app=document.querySelector('.app');if(app){app.classList.remove('hidden');app.style.setProperty('display','grid','important');}
+  try{applyRoleView();refresh();}catch(renderError){console.error('Dashboard render failed',renderError);czShowCloudStatus('Dashboard error: '+String(renderError?.message||renderError),true);}
+ } catch(e){console.error('Session restore failed',e);}
+});
 </script>
 
-<script id="cz-service-registration-click-safety">
+<script id="cz-mobile-service-click-fix">
 (function(){
- function openRegistration(service){
-   const login=document.getElementById('loginScreen');
-   const pub=document.getElementById('publicServicePage');
-   const app=document.querySelector('.app');
-   document.body.classList.remove('cz-authenticated');
-   if(app){app.style.setProperty('display','none','important');app.classList.add('hidden');}
-   if(login)login.style.setProperty('display','none','important');
-   if(pub){pub.style.setProperty('display','block','important');pub.style.setProperty('visibility','visible','important');pub.scrollIntoView({behavior:'smooth',block:'start'});}
-   if(service){
-     const select=document.getElementById('pService');
-     if(select){let opt=Array.from(select.options).find(o=>o.text.trim().toLowerCase()===String(service).trim().toLowerCase()||o.value.trim().toLowerCase()===String(service).trim().toLowerCase());
-       if(!opt){opt=document.createElement('option');opt.value=service;opt.textContent=service;select.appendChild(opt);} select.value=opt.value||service; select.dispatchEvent(new Event('change',{bubbles:true}));}
-   }
+ function openPublicService(service){
+  const login=document.getElementById('loginScreen');
+  const pub=document.getElementById('publicServicePage');
+  const app=document.querySelector('.app');
+  if(!pub){console.error('Cyber Zone: publicServicePage not found');return;}
+  document.body.classList.remove('cz-authenticated');
+  if(app){app.style.setProperty('display','none','important');app.classList.add('hidden');}
+  if(login)login.style.setProperty('display','none','important');
+  pub.style.setProperty('display','block','important');
+  pub.style.setProperty('visibility','visible','important');
+  const sel=document.getElementById('pService');
+  if(service && sel){let opt=Array.from(sel.options).find(o=>o.text.trim().toLowerCase()===service.trim().toLowerCase()||o.value.trim().toLowerCase()===service.trim().toLowerCase());if(!opt){opt=document.createElement('option');opt.value=service;opt.textContent=service;sel.appendChild(opt);}sel.value=opt.value||service;sel.dispatchEvent(new Event('change',{bubbles:true}));}
+  pub.scrollIntoView({behavior:'smooth',block:'start'});
  }
  document.addEventListener('click',function(e){
-   const tile=e.target.closest('.cz-service-item[data-service]');
-   if(tile){e.preventDefault();e.stopPropagation();openRegistration(tile.getAttribute('data-service'));return;}
-   const reg=e.target.closest('#publicRegistrationOpen');
-   if(reg){e.preventDefault();e.stopPropagation();openRegistration('');}
+  const tile=e.target.closest('.cz-service-item[data-service]');
+  if(tile){e.preventDefault();openPublicService(tile.getAttribute('data-service')||'');return;}
+  const reg=e.target.closest('#publicRegistrationOpen');
+  if(reg){e.preventDefault();openPublicService('');return;}
+  const back=e.target.closest('#staffLoginOpen');
+  if(back){e.preventDefault();const pub=document.getElementById('publicServicePage');const login=document.getElementById('loginScreen');if(pub)pub.style.display='none';if(login)login.style.setProperty('display','flex','important');}
  },true);
- // Keep service tiles above decorative layers and tappable on mobile.
- const css=document.createElement('style');css.textContent='.cz-service-item{position:relative!important;z-index:10001!important;pointer-events:auto!important;touch-action:manipulation!important}#publicRegistrationOpen{position:relative!important;z-index:10001!important;pointer-events:auto!important;touch-action:manipulation!important}';document.head.appendChild(css);
 })();
 </script>
 
