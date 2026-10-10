@@ -89,20 +89,22 @@ body.cz-authenticated .app{display:grid!important}
   </div><div id="pMessage" style="margin-top:12px;font-size:14px"></div></form>
   <p style="font-size:12px;color:#667085;margin-top:22px">Note: This is a demo. Applications will reach the Management Portal on other devices only after an online server and secure document storage are configured.</p>
  </div>
+ <div class="cz-login-contact" style="margin-top:14px;background:#fff;border:1px solid #dce4ef;border-radius:14px;padding:14px 16px;box-shadow:0 5px 18px #13294b0b;font-size:13px;line-height:1.6;color:#152746"><b>Cyber Zone — Contact Us</b><br><b>Address:</b> Dhakka Karam Chand, Dhampur to Nehtaur Road, Nearby Ram Raheem Medical, Uttar Pradesh - 246761<br><b>Gmail:</b> <a href="mailto:cyberzone.biz@gmail.com">cyberzone.biz@gmail.com</a><br><b>Contact:</b> <a href="tel:7505436716">7505436716</a></div>
+ </div>
 </div>
 
 <style>
 #loginScreen{overflow:hidden}
 .cz-login-layout{width:min(1120px,100%);display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:22px;align-items:center;margin:auto}
-.cz-login-left{min-width:0;min-height:0}.cz-login-card{position:sticky;top:18px;align-self:start}.cz-login-services{max-height:calc(100dvh - 36px);overflow-y:auto}.cz-login-services{background:#fff;border:1px solid #dce4ef;border-radius:18px;padding:22px;box-shadow:0 12px 40px #13294b18}
+.cz-login-left{min-width:0;min-height:0}.cz-login-right{min-width:0;display:flex;flex-direction:column;gap:12px;align-self:center}.cz-login-card{position:relative;top:auto;align-self:start}.cz-login-services{max-height:calc(100dvh - 36px);overflow-y:auto}.cz-login-services{background:#fff;border:1px solid #dce4ef;border-radius:18px;padding:22px;box-shadow:0 12px 40px #13294b18}
 .cz-login-services h2{margin:0 0 6px;color:#175cd3;font-size:22px}.cz-login-services .cz-service-sub{margin:0 0 16px;color:#667085;font-size:13px}
 .cz-service-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .cz-service-item{width:100%;text-align:left;display:flex;align-items:center;gap:10px;min-height:62px;padding:10px;border:1px solid #dce4ef;border-radius:12px;background:#f8faff;font-weight:800;color:#152746;animation:czServicePulse 1.35s ease-in-out infinite alternate}
 .cz-service-logo{width:38px;height:38px;flex:0 0 38px;display:flex;align-items:center;justify-content:center;line-height:1;white-space:nowrap;border-radius:10px;background:#e0ecff;font-size:23px}
 .cz-service-item:hover{background:#eaf1ff;transform:translateY(-1px)}.cz-service-item>span:last-child{display:block;min-width:0;overflow-wrap:anywhere;line-height:1.25}.cz-service-item:nth-child(2n) .cz-service-logo{background:#dcfae6}.cz-service-item:nth-child(3n) .cz-service-logo{background:#fff0d2}
 @keyframes czServicePulse{from{box-shadow:0 0 0 0 #175cd318}to{box-shadow:0 0 0 3px #175cd32b}}
-@media(max-width:760px){#loginScreen{align-items:stretch!important;padding:10px!important;height:100dvh}.cz-login-layout{height:100%;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:10px;width:100%;max-width:460px;align-items:stretch}.cz-login-left{overflow:visible}.cz-login-card{position:relative;top:auto;width:100%!important;padding:16px!important}.cz-login-services{padding:16px;max-height:none;height:100%;overflow-y:auto}.cz-login-services h2{font-size:19px}.cz-service-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.cz-service-item{font-size:12px;min-height:62px;padding:8px;gap:7px}.cz-service-logo{width:32px;height:32px;flex-basis:32px;font-size:19px}}
-@media(min-width:761px){#loginScreen{padding:24px!important}.cz-login-card{width:100%!important;max-width:420px}}
+@media(max-width:760px){#loginScreen{align-items:flex-start!important;justify-content:center!important;padding:10px!important;height:100dvh;overflow-y:auto;overflow-x:hidden}.cz-login-layout{height:auto;min-height:100%;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;gap:12px;width:100%;max-width:460px;align-items:start;margin:auto}.cz-login-left{overflow:visible;grid-row:2}.cz-login-right{grid-row:1;width:100%;align-self:start}.cz-login-card{position:relative;top:auto;width:100%!important;padding:16px!important}.cz-login-card>div{width:100%!important;padding:16px!important;box-sizing:border-box}.cz-login-services{padding:16px;max-height:44dvh;height:auto;overflow-y:auto}.cz-login-services h2{font-size:19px}.cz-service-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.cz-service-item{font-size:12px;min-height:62px;padding:8px;gap:7px}.cz-service-logo{width:32px;height:32px;flex-basis:32px;font-size:19px}.cz-login-contact{overflow-wrap:anywhere;font-size:12px!important;padding:12px!important}}
+@media(min-width:761px){#loginScreen{padding:24px!important}.cz-login-right{width:100%;max-width:420px}.cz-login-card{width:100%!important;max-width:420px}.cz-login-contact{overflow-wrap:anywhere}}
 </style>
 <div id="loginScreen" style="position:fixed;inset:0;z-index:9999;background:#eef3fb;display:flex;align-items:center;justify-content:center;padding:18px">
  <div class="cz-login-layout">
@@ -128,8 +130,9 @@ body.cz-authenticated .app{display:grid!important}
 <button type="button" class="cz-service-item" data-service="Resume & Document Formatting" aria-label="Register for Resume & Document Formatting"><span class="cz-service-logo">🧾</span><span>Resume & Document Formatting</span></button>
 <button type="button" class="cz-service-item" data-service="Banner & Poster Design" aria-label="Register for Banner & Poster Design"><span class="cz-service-logo">📢</span><span>Banner & Poster Design</span></button>
 </div></div>
- <div class="cz-login-contact" style="margin-top:14px;background:#fff;border:1px solid #dce4ef;border-radius:14px;padding:14px 16px;box-shadow:0 5px 18px #13294b0b;font-size:13px;line-height:1.6;color:#152746"><b>Cyber Zone — Contact Us</b><br><b>Address:</b> Dhakka Karam Chand, Dhampur to Nehtaur Road, Nearby Ram Raheem Medical, Uttar Pradesh - 246761<br><b>Gmail:</b> <a href="mailto:cyberzone.biz@gmail.com">cyberzone.biz@gmail.com</a><br><b>Contact:</b> <a href="tel:7505436716">7505436716</a></div>
+
  </div>
+ <div class="cz-login-right">
  <div class="cz-login-card" style="background:white;width:min(100%,420px);border:1px solid #dce4ef;border-radius:18px;padding:24px;box-shadow:0 12px 40px #13294b18">
  <div style="background:white;width:min(100%,420px);border:1px solid #dce4ef;border-radius:18px;padding:24px;box-shadow:0 12px 40px #13294b18">
   <button type="button" id="publicRegistrationOpen" style="width:100%;padding:12px;margin-bottom:18px;border:0;border-radius:9px;background:#087f5b;color:white;font-weight:700;cursor:pointer">NEW SERVICE REGISTRATION</button>
@@ -147,8 +150,8 @@ body.cz-authenticated .app{display:grid!important}
   <div id="forgotBox" style="display:none;margin-top:14px;padding:12px;border:1px solid #dce4ef;border-radius:10px"><b>Reset Password</b><p style="font-size:12px;color:#667085">Demo recovery uses the registered mobile number and recovery code. For a real public website, server-side OTP verification is required.</p><label style="display:block;font-size:13px;margin:8px 0 4px">Registered Mobile Number</label><input id="resetPhone" inputmode="numeric" maxlength="10" placeholder="7818942933" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px"><label style="display:block;font-size:13px;margin:8px 0 4px">Recovery Code</label><input id="resetCode" placeholder="Enter recovery code" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px"><label style="display:block;font-size:13px;margin:8px 0 4px">New Password</label><input id="resetNewPassword" type="password" minlength="8" placeholder="At least 8 characters" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px"><button type="button" id="resetPasswordBtn" style="width:100%;margin-top:10px">New Password  </button><div id="resetMessage" style="font-size:13px;margin-top:8px"></div></div>
   <div id="loginError" style="color:#b42318;font-size:13px;margin-top:12px"></div>
  </div>
-</div>
-
+<div class="cz-login-contact" style="margin-top:0;background:#fff;border:1px solid #dce4ef;border-radius:14px;padding:14px 16px;box-shadow:0 5px 18px #13294b0b;font-size:13px;line-height:1.6;color:#152746;overflow-wrap:anywhere"><b>Cyber Zone — Contact Us</b><br><b>Address:</b> Dhakka Karam Chand, Dhampur to Nehtaur Road, Nearby Ram Raheem Medical, Uttar Pradesh - 246761<br><b>Gmail:</b> <a href="mailto:cyberzone.biz@gmail.com">cyberzone.biz@gmail.com</a><br><b>Contact:</b> <a href="tel:7505436716">7505436716</a></div>
+ </div>
  </div>
 </div>
 
