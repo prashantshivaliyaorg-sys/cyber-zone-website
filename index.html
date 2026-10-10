@@ -57,29 +57,6 @@ body.cz-authenticated .app{display:grid!important}
 #publicRegistrationOpen::after { content:' ★'; }
 #publicRegistrationOpen:focus-visible { outline:3px solid #222; outline-offset:3px; }
 /* Keep Service Registration blinking continuously as requested. */
-
-/* Login-only responsive layout and Hindi service highlights */
-.cz-login-layout{flex-direction:row;align-items:center;justify-content:center}
-.cz-login-promos{width:min(42vw,420px);max-width:420px;display:flex;flex-direction:column;gap:12px;padding:18px}
-.cz-promo-title{font-size:26px;font-weight:900;color:#175cd3;margin-bottom:4px}
-.cz-promo-item{font-size:18px;font-weight:900;color:#10213a;background:#fff;border:1px solid #d8e4f4;border-left:5px solid #175cd3;border-radius:10px;padding:13px 15px;animation:czPromoBlink 1.4s ease-in-out infinite}
-.cz-promo-item:nth-child(odd){animation-delay:.35s}
-@keyframes czPromoBlink{0%,100%{opacity:1;transform:translateX(0);box-shadow:0 0 0 rgba(23,92,211,0)}50%{opacity:.58;transform:translateX(4px);box-shadow:0 0 12px rgba(23,92,211,.22)}}
-.cz-login-card{flex:0 1 420px}
-@media(max-width:700px){
- #loginScreen.cz-login-layout{flex-direction:column;justify-content:flex-start;align-items:stretch;gap:12px;padding:12px;overflow-y:auto}
- #loginScreen .cz-login-promos{order:2;width:100%;max-width:none;padding:6px 2px;gap:7px}
- #loginScreen .cz-login-card{order:1;flex:0 0 auto;width:100%!important;max-width:420px;margin:0 auto;padding:18px!important}
- #loginScreen .cz-promo-title{font-size:19px;text-align:center;margin-bottom:0}
- #loginScreen .cz-promo-item{font-size:14px;padding:9px 11px}
-}
-@media(min-width:701px){
- #loginScreen.cz-login-layout{min-height:100vh}
- #loginScreen .cz-login-promos{order:1}
- #loginScreen .cz-login-card{order:2}
-}
-@media(prefers-reduced-motion:reduce){.cz-promo-item{animation:none}}
-
 </style>
 </head>
 <body>
@@ -114,17 +91,34 @@ body.cz-authenticated .app{display:grid!important}
  </div>
 </div>
 
-<div id="loginScreen" class="cz-login-layout" style="position:fixed;inset:0;z-index:9999;background:#eef3fb;display:flex;align-items:center;justify-content:center;padding:18px;gap:28px;overflow:auto">
-  <aside class="cz-login-promos" aria-label="हमारी सेवाएँ">
-   <div class="cz-promo-title">हमारी सेवाएँ</div>
-   <div class="cz-promo-item">पासपोर्ट फोटो बनाना</div>
-   <div class="cz-promo-item">फोटो एडिटिंग मास्टर</div>
-   <div class="cz-promo-item">विज्ञापन डिजाइन</div>
-   <div class="cz-promo-item">विजिटिंग कार्ड डिजाइन मेकर</div>
-   <div class="cz-promo-item">ऑनलाइन फॉर्म और प्रिंटिंग</div>
-   <div class="cz-promo-item">दस्तावेज़ स्कैन एवं अपलोड</div>
-  </aside>
-  <div class="cz-login-card" style="background:white;width:min(100%,420px);border:1px solid #dce4ef;border-radius:18px;padding:24px;box-shadow:0 12px 40px #13294b18">
+<style>
+#loginScreen{overflow:auto}
+.cz-login-layout{width:min(1120px,100%);display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:22px;align-items:center;margin:auto}
+.cz-login-services{background:#fff;border:1px solid #dce4ef;border-radius:18px;padding:22px;box-shadow:0 12px 40px #13294b18}
+.cz-login-services h2{margin:0 0 6px;color:#175cd3;font-size:22px}.cz-login-services .cz-service-sub{margin:0 0 16px;color:#667085;font-size:13px}
+.cz-service-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cz-service-item{display:flex;align-items:center;gap:10px;min-height:62px;padding:10px;border:1px solid #dce4ef;border-radius:12px;background:#f8faff;font-weight:800;color:#152746;animation:czServicePulse 1.35s ease-in-out infinite alternate}
+.cz-service-logo{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;border-radius:10px;background:#e0ecff;font-size:23px}
+.cz-service-item:nth-child(2n) .cz-service-logo{background:#dcfae6}.cz-service-item:nth-child(3n) .cz-service-logo{background:#fff0d2}
+@keyframes czServicePulse{from{box-shadow:0 0 0 0 #175cd318}to{box-shadow:0 0 0 3px #175cd32b}}
+@media(max-width:760px){#loginScreen{align-items:flex-start!important;padding:12px!important}.cz-login-layout{grid-template-columns:minmax(0,1fr);gap:14px;width:100%;max-width:460px}.cz-login-card{width:100%!important;padding:20px!important}.cz-login-services{padding:16px}.cz-login-services h2{font-size:19px}.cz-service-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.cz-service-item{font-size:12px;min-height:62px;padding:8px;gap:7px}.cz-service-logo{width:32px;height:32px;flex-basis:32px;font-size:19px}}
+@media(min-width:761px){#loginScreen{padding:24px!important}.cz-login-card{width:100%!important;max-width:420px}}
+</style>
+<div id="loginScreen" style="position:fixed;inset:0;z-index:9999;background:#eef3fb;display:flex;align-items:center;justify-content:center;padding:18px">
+ <div class="cz-login-layout">
+ <div class="cz-login-services"><h2>Our Services</h2><p class="cz-service-sub">Professional digital services at Cyber Zone</p><div class="cz-service-grid">
+<div class="cz-service-item"><span class="cz-service-logo">🪪</span><span>Passport Photo</span></div>
+<div class="cz-service-item"><span class="cz-service-logo">🖼️</span><span>Photo Editing Master</span></div>
+<div class="cz-service-item"><span class="cz-service-logo">📢</span><span>Advertisement Design</span></div>
+<div class="cz-service-item"><span class="cz-service-logo">💳</span><span>Visiting Card Maker</span></div>
+<div class="cz-service-item"><span class="cz-service-logo">👷</span><span>Labour Card</span></div>
+<div class="cz-service-item"><span class="cz-service-logo">🧑‍💻</span><span>e-Shram Card</span></div>
+<div class="cz-service-item"><span class="cz-service-logo">📝</span><span>Online Forms</span></div>
+<div class="cz-service-item"><span class="cz-service-logo">📄</span><span>Document Scan &amp; Upload</span></div>
+<div class="cz-service-item"><span class="cz-service-logo">🖨️</span><span>Print &amp; Photocopy</span></div>
+</div></div>
+ <div class="cz-login-card" style="background:white;width:min(100%,420px);border:1px solid #dce4ef;border-radius:18px;padding:24px;box-shadow:0 12px 40px #13294b18">
+ <div style="background:white;width:min(100%,420px);border:1px solid #dce4ef;border-radius:18px;padding:24px;box-shadow:0 12px 40px #13294b18">
   <button type="button" id="publicRegistrationOpen" style="width:100%;padding:12px;margin-bottom:18px;border:0;border-radius:9px;background:#087f5b;color:white;font-weight:700;cursor:pointer">NEW SERVICE REGISTRATION</button>
   <h2 style="margin:0 0 5px;color:#152746">Cyber Zone Login</h2>
   <p style="color:#667085;margin:0 0 18px;font-size:14px">Only Management can log in using the Management ID and password.</p>
@@ -142,6 +136,9 @@ body.cz-authenticated .app{display:grid!important}
  </div>
 </div>
 
+ </div>
+</div>
+
 <div class="app">
 <aside class="sidebar">
   <div class="brand">🖥️ Cyber Zone<small>Management System</small></div>
@@ -151,7 +148,6 @@ body.cz-authenticated .app{display:grid!important}
     <button data-page="work">▤ Daily Work</button>
     <button data-page="customers">♙ Customers</button>
     <button data-page="expenses">₹ Income & Expenses</button>
-    <button data-page="staff">♧ Staff Management</button>
     <button data-page="reports">▥ Reports</button>
     <button data-page="settings">⚙ Settings & Backup</button>
   </nav>
@@ -276,16 +272,21 @@ $('loginBtn').addEventListener('click', async ()=>{
    const {data:authData,error:authError}=await supabaseClient.auth.signInWithPassword({email,password});
    if(authError) throw authError;
    const user=authData.user;
+   // Only the configured Management Auth UID is permitted.
+   if(user.id !== CZ_MANAGEMENT_UID){await supabaseClient.auth.signOut();throw new Error('Access denied. Only the Management account can log in.');}
+   let ownerId=CZ_MANAGEMENT_UID;
+   // Membership lookup is optional only for this exact Management UID; RLS can hide the row.
    const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members').select('role,owner_id,active').eq('user_id',user.id).maybeSingle();
-   if(memberError) throw memberError;
-   if(!membership || membership.active===false) { await supabaseClient.auth.signOut(); throw new Error('This account has not been enabled by Management.'); }
-   if(membership.role!=='management'){await supabaseClient.auth.signOut();throw new Error('Access denied. Only the Management account can log in.');}
+   if(!memberError && membership){
+     if(membership.active===false || membership.role!=='management'){await supabaseClient.auth.signOut();throw new Error('Management account is disabled. Check the Management membership settings.');}
+     ownerId=membership.owner_id||CZ_MANAGEMENT_UID;
+   }
    const actualRole='Management';
    localStorage.setItem('cz_logged_role',actualRole); localStorage.setItem('cz_logged_user',user.email||email); localStorage.setItem('cz_login_alias',loginId);
    document.body.classList.add('cz-authenticated');
    const gate=$('loginScreen'),pub=$('publicServicePage'),app=document.querySelector('.app');
    if(gate)gate.style.display='none'; if(pub)pub.style.display='none'; if(app){app.classList.remove('hidden');app.style.display='grid';}
-   await czCloudLoad(membership.owner_id);
+   await czCloudLoad(ownerId);
    applyRoleView(); refresh(); if(err)err.textContent='';
  } catch(e) {
    if(err){
@@ -352,11 +353,16 @@ async function czCloudSave(key,value){
  const {data:authData,error:authError}=await supabaseClient.auth.getUser();
  if(authError) throw authError;
  if(!authData?.user) throw new Error('Not signed in to Supabase; cloud sync was not performed.');
- const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members')
-  .select('owner_id,active').eq('user_id',authData.user.id).maybeSingle();
- if(memberError) throw new Error('Could not read organization membership: '+memberError.message);
- if(!membership||membership.active===false) throw new Error('No active organization membership');
- const row={owner_id:membership.owner_id,state_key:key,state_json:value,updated_at:new Date().toISOString()};
+ let ownerId=null;
+ if(authData.user.id===CZ_MANAGEMENT_UID){
+   ownerId=CZ_MANAGEMENT_UID;
+   const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members').select('owner_id,active,role').eq('user_id',authData.user.id).maybeSingle();
+   if(!memberError && membership){
+     if(membership.active===false || membership.role!=='management') throw new Error('Management account is disabled');
+     ownerId=membership.owner_id||CZ_MANAGEMENT_UID;
+   }
+ } else { throw new Error('Only the Management account can sync data.'); }
+ const row={owner_id:ownerId,state_key:key,state_json:value,updated_at:new Date().toISOString()};
  const {error:upsertError}=await supabaseClient.from('cz_app_state').upsert(row,{onConflict:'owner_id,state_key'});
  if(!upsertError) return;
  const {data:existing,error:selectError}=await supabaseClient.from('cz_app_state')
@@ -578,14 +584,16 @@ document.addEventListener('DOMContentLoaded',function(){
 supabaseClient.auth.getSession().then(async ({data,error})=>{
  if(error||!data?.session?.user) return;
  try {
-  const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members').select('role,owner_id,active').eq('user_id',data.session.user.id).maybeSingle();
-  if(memberError||!membership||membership.active===false) return;
-  const role=membership.role==='management'?'Management':'Staff';
-  localStorage.setItem('cz_logged_role',role); localStorage.setItem('cz_logged_user',data.session.user.email||'');
+  const user=data.session.user;
+  if(user.id!==CZ_MANAGEMENT_UID){await supabaseClient.auth.signOut();return;}
+  let ownerId=CZ_MANAGEMENT_UID;
+  const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members').select('role,owner_id,active').eq('user_id',user.id).maybeSingle();
+  if(!memberError && membership){if(membership.active===false || membership.role!=='management'){await supabaseClient.auth.signOut();return;} ownerId=membership.owner_id||CZ_MANAGEMENT_UID;}
+  localStorage.setItem('cz_logged_role','Management'); localStorage.setItem('cz_logged_user',user.email||'');
   document.body.classList.add('cz-authenticated');
   if($('loginScreen'))$('loginScreen').style.display='none'; if($('publicServicePage'))$('publicServicePage').style.display='none';
   const app=document.querySelector('.app');if(app){app.classList.remove('hidden');app.style.display='grid';}
-  await czCloudLoad(membership.owner_id); czShowCloudStatus('Cloud sync connected.'); applyRoleView(); refresh();
+  await czCloudLoad(ownerId); czShowCloudStatus('Cloud sync connected.'); applyRoleView(); refresh();
  } catch(e){console.error('Session restore failed',e);}
 });
 </script>
