@@ -56,7 +56,7 @@ body.cz-authenticated .app{display:grid!important}
 #publicRegistrationOpen::before { content:'★ '; }
 #publicRegistrationOpen::after { content:' ★'; }
 #publicRegistrationOpen:focus-visible { outline:3px solid #222; outline-offset:3px; }
-@media (prefers-reduced-motion: reduce) { #publicRegistrationOpen { animation:none !important; } }
+/* Keep Service Registration blinking continuously as requested. */
 </style>
 </head>
 <body>
@@ -234,16 +234,20 @@ $('toggleLoginPassword')?.addEventListener('click',()=>{
 });
 $('loginRole')?.addEventListener('change',()=>{
  const field=$('loginId'); if(!field)return;
- field.placeholder=$('loginRole').value==='Staff'?'Enter the staff email registered in Supabase Auth':'Enter the Management email registered in Supabase Auth';
+ field.placeholder=$('loginRole').value==='Staff'?'Enter Staff ID (e.g. czstaff01) or registered email':'Enter czadmin or the registered Management email';
 });
 
 // Supabase Authentication. Management and Staff accounts must exist in Supabase Auth and have an active row in public.cz_org_members.
 $('loginBtn').addEventListener('click', async ()=>{
- const email=String($('loginId')?.value||'').trim().toLowerCase();
+ const loginId=String($('loginId')?.value||'').trim().toLowerCase();
  const password=String($('loginPassword')?.value||'');
  const selectedRole=String($('loginRole')?.value||'Management');
+ // Short aliases: Management may use czadmin; Staff may use a staff ID.
+ // Auth accounts still must be created in Supabase Auth with the mapped email.
+ const email = loginId.includes('@') ? loginId : (selectedRole==='Management' && loginId==='czadmin' ? 'cyberzone.biz@gmail.com' : (selectedRole==='Staff' && /^[a-z0-9._-]+$/.test(loginId) ? loginId+'@staff.cyberzone.sbs' : ''));
  const err=$('loginError'); if(err)err.textContent='';
- if(!email||!password){if(err)err.textContent='Please enter your email and password.';return;}
+ if(!loginId||!password){if(err)err.textContent='Please enter your User ID/email and password.';return;}
+ if(!email){if(err)err.textContent='Invalid User ID. Use czadmin for Management, or a valid Staff ID/email.';return;}
  if(err)err.textContent='Connecting securely…';
  try {
    const {data:authData,error:authError}=await supabaseClient.auth.signInWithPassword({email,password});
@@ -254,7 +258,7 @@ $('loginBtn').addEventListener('click', async ()=>{
    if(!membership || membership.active===false) { await supabaseClient.auth.signOut(); throw new Error('This account has not been enabled by Management.'); }
    const actualRole=membership.role==='management'?'Management':'Staff';
    if(actualRole!==selectedRole){await supabaseClient.auth.signOut();throw new Error('Please choose the correct login type: '+actualRole+'.');}
-   localStorage.setItem('cz_logged_role',actualRole); localStorage.setItem('cz_logged_user',user.email||email);
+   localStorage.setItem('cz_logged_role',actualRole); localStorage.setItem('cz_logged_user',user.email||email); localStorage.setItem('cz_login_alias',loginId);
    document.body.classList.add('cz-authenticated');
    const gate=$('loginScreen'),pub=$('publicServicePage'),app=document.querySelector('.app');
    if(gate)gate.style.display='none'; if(pub)pub.style.display='none'; if(app){app.classList.remove('hidden');app.style.display='grid';}
@@ -265,7 +269,7 @@ $('loginBtn').addEventListener('click', async ()=>{
      const detail=String(e?.message||'');
      err.textContent='Login failed: '+(detail||'Check the account email and password.');
      if(selectedRole==='Staff' && /Invalid login credentials|User not found|not enabled by Management|row-level security|permission/i.test(detail)){
-       err.textContent+=' Staff login requires a Staff user created in Supabase Authentication and an active Staff entry in public.cz_org_members. A name/phone/password saved only in Staff Management is not enough for secure login on multiple phones.';
+       err.textContent+=' Staff ID login maps to '+(loginId.includes('@')?loginId:loginId+'@staff.cyberzone.sbs')+'. Create that exact email in Supabase Authentication and add its Auth user UUID as an active Staff row in public.cz_org_members.';
      }
    }
  }
