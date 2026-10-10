@@ -646,31 +646,9 @@ $('centerName').value=settings.name||'Cyber Zone';$('centerPhone').value=setting
 </script>
 
 <script>
-// Restore the current browser session after refresh; logout explicitly clears it.
-document.addEventListener('DOMContentLoaded',function(){
- try {
-  const role=localStorage.getItem('cz_logged_role');
-  const uid=localStorage.getItem('cz_logged_user');
-  const gate=document.getElementById('loginScreen');
-  const pub=document.getElementById('publicServicePage');
-  const app=document.querySelector('.app');
-  if(role && uid && app){
-   document.body.classList.add('cz-authenticated');
-   if(gate)gate.style.display='none';
-   if(pub)pub.style.display='none';
-   app.classList.remove('hidden');app.style.display='grid';
-   if(typeof applyRoleView==='function')applyRoleView();
-   if(typeof refresh==='function')refresh();
-  } else {
-   if(app){app.style.display='none';app.classList.add('hidden');}
-   if(gate)gate.style.display='flex';
-  }
- } catch(e) {}
-});
-
-// Restore an existing Supabase session after page refresh; never trust a localStorage role by itself.
+// Restore only a valid Supabase Management session; do not trust localStorage alone.
 supabaseClient.auth.getSession().then(async ({data,error})=>{
- if(error||!data?.session?.user) return;
+ if(error || !data?.session?.user) return;
  try {
   const user=data.session.user;
   if(user.id!==CZ_MANAGEMENT_UID){await supabaseClient.auth.signOut();return;}
@@ -682,8 +660,8 @@ supabaseClient.auth.getSession().then(async ({data,error})=>{
   catch(cloudError){ console.error('Cloud load failed during session restore:',cloudError); czCloudReady=false; czShowCloudStatus('Signed in, but cloud sync failed: '+String(cloudError?.message||cloudError)+'. Local browser data is shown.',true); }
   document.body.classList.add('cz-authenticated');
   if($('loginScreen'))$('loginScreen').style.display='none'; if($('publicServicePage'))$('publicServicePage').style.display='none';
-  const app=document.querySelector('.app');if(app){app.classList.remove('hidden');app.style.display='grid';}
-  applyRoleView(); refresh();
+  const app=document.querySelector('.app');if(app){app.classList.remove('hidden');app.style.setProperty('display','grid','important');}
+  try{applyRoleView();refresh();}catch(renderError){console.error('Dashboard render failed',renderError);czShowCloudStatus('Dashboard error: '+String(renderError?.message||renderError),true);}
  } catch(e){console.error('Session restore failed',e);}
 });
 </script>
