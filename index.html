@@ -122,7 +122,7 @@ body.cz-authenticated .app{display:grid!important}
     <button data-page="reports">▥ Reports</button>
     <button data-page="settings">⚙ Settings & Backup</button>
   </nav>
-  <div class="side-note">Starter version · Data is saved in this browser on this device. Use Backup regularly.</div>
+  <div class="side-note">Cloud sync enabled · Keep regular backups of your Cyber Zone data.</div>
 </aside>
 <main>
   
@@ -130,7 +130,7 @@ body.cz-authenticated .app{display:grid!important}
     <div><h1 id="pageTitle">Dashboard</h1><div class="sub" id="todayLabel"></div></div>
     <div class="top-actions"><button class="secondary" onclick="logoutDemo()">Logout</button><button class="secondary" onclick="exportPDF()">Download PDF</button><button onclick="showPage('work');openWorkForm()">+ Add New Work</button></div>
   </div>
-  <div class="notice">⚠️ <b>Important:</b> Starter version: data is saved in this browser on this device. Shared data across devices, secure login and automated SMS require an online backend/database and SMS gateway.</div>
+  <div class="notice">Cloud sync status will appear here after Management or Staff signs in. Keep a separate backup regularly.</div>
 
   <section id="page-dashboard">
     <div id="staffPersonalSummary" class="cards" style="display:none;margin-bottom:16px"><div class="card"><div class="metric-label">Your Total Work</div><div class="metric" id="staffWorkCount">0</div></div><div class="card"><div class="metric-label">Your Commission</div><div class="metric" id="staffCommission">₹0</div></div><div class="card"><div class="metric-label">Your Net Profit</div><div class="metric" id="staffProfit">₹0</div></div></div>
@@ -274,7 +274,7 @@ const load=(k,d)=>{try{return JSON.parse(localStorage.getItem('cz_'+k))??d}catch
 const save=(k,v)=>{
   localStorage.setItem('cz_'+k,JSON.stringify(v));
   if(czCloudReady && CZ_STATE_KEYS.includes(k)) {
-    czCloudSave(k,v).then(()=>czShowCloudStatus('Online backup updated.'))
+    czCloudSave(k,v).then(()=>czShowCloudStatus('Cloud sync saved: '+k))
       .catch(e=>{console.error('Cloud save failed',e);czShowCloudStatus('Cloud save failed: '+(e?.message||e),true);});
   }
 };
@@ -284,23 +284,34 @@ function czShowCloudStatus(message,isError=false){
   el.textContent=message;el.style.background=isError?'#fff1f0':'#ecfdf3';el.style.color=isError?'#b42318':'#067647';
 }
 let works=load('works',[]), money=load('money',[]), staff=load('staff',[]), settings=load('settings',{name:'Cyber Zone',phone:''}), requests=load('requests',[]);
+function czHasUsefulData(key,value){
+  if(key==='settings') return !!(value && typeof value==='object' && (String(value.name||'').trim() && String(value.name).trim()!=='Cyber Zone' || String(value.phone||'').trim()));
+  return Array.isArray(value) ? value.length>0 : !!(value && typeof value==='object' && Object.keys(value).length>0);
+}
 async function czCloudLoad(ownerId){
  const {data,error}=await supabaseClient.from('cz_app_state').select('state_key,state_json').eq('owner_id',ownerId);
  if(error) throw error;
  const rows=data||[];
- // First-login migration: if this organization has no cloud state yet, upload the current browser's saved data.
- if(rows.length===0){
-   const localState={works:load('works',[]),money:load('money',[]),staff:load('staff',[]),settings:load('settings',{name:'Cyber Zone',phone:''}),requests:load('requests',[])};
-   czCloudReady=true;
-   for(const key of CZ_STATE_KEYS){await czCloudSave(key,localState[key]);}
- } else {
-   for(const row of rows){if(CZ_STATE_KEYS.includes(row.state_key)){localStorage.setItem('cz_'+row.state_key,JSON.stringify(row.state_json));}}
-   // Fill any state keys not yet present in the cloud from this browser's saved values.
-   const cloudKeys=new Set(rows.map(row=>row.state_key));
-   czCloudReady=true;
-   for(const key of CZ_STATE_KEYS){if(!cloudKeys.has(key)){await czCloudSave(key,load(key,key==='settings'?{name:'Cyber Zone',phone:''}:[]));}}
+ const cloudMap=new Map(rows.filter(r=>CZ_STATE_KEYS.includes(r.state_key)).map(r=>[r.state_key,r.state_json]));
+ const defaults={works:[],money:[],staff:[],settings:{name:'Cyber Zone',phone:''},requests:[]};
+ // Never overwrite useful browser data with an empty cloud value. Upload local data when cloud is empty.
+ czCloudReady=false;
+ const toUpload=[];
+ for(const key of CZ_STATE_KEYS){
+   const localValue=load(key,defaults[key]);
+   const hasCloud=cloudMap.has(key);
+   const cloudValue=cloudMap.get(key);
+   if(!hasCloud || (!czHasUsefulData(key,cloudValue) && czHasUsefulData(key,localValue))){
+     localStorage.setItem('cz_'+key,JSON.stringify(localValue));
+     toUpload.push([key,localValue]);
+   } else {
+     localStorage.setItem('cz_'+key,JSON.stringify(cloudValue));
+   }
  }
- works=load('works',[]); money=load('money',[]); staff=load('staff',[]); settings=load('settings',{name:'Cyber Zone',phone:''}); requests=load('requests',[]);
+ works=load('works',[]); money=load('money',[]); staff=load('staff',[]); settings=load('settings',defaults.settings); requests=load('requests',[]);
+ czCloudReady=true;
+ for(const [key,value] of toUpload) await czCloudSave(key,value);
+ czShowCloudStatus('Cloud sync connected. Data is saved to Supabase when changes are made.');
 }
 async function czCloudSave(key,value){
  const {data:authData,error:authError}=await supabaseClient.auth.getUser();
