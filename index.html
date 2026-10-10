@@ -56,7 +56,7 @@ body.cz-authenticated .app{display:grid!important}
 #publicRegistrationOpen::before { content:'★ '; }
 #publicRegistrationOpen::after { content:' ★'; }
 #publicRegistrationOpen:focus-visible { outline:3px solid #222; outline-offset:3px; }
-/* Keep Service Registration blinking continuously as requested. */
+@media (prefers-reduced-motion: reduce) { #publicRegistrationOpen { animation:none !important; } }
 </style>
 </head>
 <body>
