@@ -339,6 +339,62 @@ $('staffForm').addEventListener('submit',e=>{e.preventDefault();if(String($('sPa
 function renderStaff(){populateStaff();$('staffRows').innerHTML=staff.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.phone)}</td><td>${esc(s.role)}</td><td>${esc(s.date)}</td><td><button class="danger mini" onclick="deleteStaff('${s.id}')">Delete</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">No staff added yet.</td></tr>'}
 function deleteStaff(idv){if(String(localStorage.getItem('cz_logged_role')||'').toLowerCase()==='staff'){alert('Only Management can delete staff.');return;}if(confirm('Delete this staff member?')){staff=staff.filter(s=>s.id!==idv);persist()}}
 function refresh(){const all=works,ws=visibleWorks(),d=today(),todayWorks=ws.filter(w=>w.date===d),todayPaid=todayWorks.reduce((a,w)=>a+n(w.paid),0),todayCost=todayWorks.reduce((a,w)=>a+n(w.cost),0),due=ws.reduce((a,w)=>a+n(w.charge)-n(w.paid),0);$('mToday').textContent=todayWorks.length;$('mPending').textContent=ws.filter(w=>w.status==='Pending').length;$('mProcessing').textContent=ws.filter(w=>w.status==='Processing').length;$('mCompleted').textContent=ws.filter(w=>w.status==='Completed').length;$('mIncome').textContent=ru(todayPaid);$('mExpense').textContent=ru(todayCost);$('mDue').textContent=ru(due);$('mCustomers').textContent=new Set(ws.map(w=>w.phone||w.name)).size;$('sumFees').textContent=ru(todayWorks.reduce((a,w)=>a+n(w.charge),0));$('sumPaid').textContent=ru(todayPaid);$('sumNet').textContent=ru(todayWorks.reduce((a,w)=>a+n(w.charge)-n(w.cost)-n(w.commission),0));$('recentRows').innerHTML=ws.slice(0,6).map(w=>`<tr><td>${esc(w.name||'-')}</td><td>${esc(w.task||'')}</td><td>${badge(w.status)}</td><td>${ru(n(w.charge)-n(w.paid))}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">No work recorded yet.</td></tr>';$('rWorks').textContent=ws.length;$('rCharges').textContent=ru(ws.reduce((a,w)=>a+n(w.charge),0));$('rPaid').textContent=ru(ws.reduce((a,w)=>a+n(w.paid),0));$('rDue').textContent=ru(due);$('rExpenses').textContent=ru(ws.reduce((a,w)=>a+n(w.cost),0));$('rComplete').textContent=ws.filter(w=>w.status==='Completed').length;renderWork();if(localStorage.getItem('cz_logged_role')!=='Staff'){renderCustomers();renderMoney();renderStaff();}}
+function downloadBackup(){
+  try {
+    // Export all Cyber Zone browser data without changing or deleting anything.
+    const payload={
+      format:'cyber-zone-backup',
+      version:1,
+      exportedAt:new Date().toISOString(),
+      origin:location.origin,
+      data:{}
+    };
+    for(let i=0;i<localStorage.length;i++){
+      const key=localStorage.key(i);
+      if(key && (key.startsWith('cz_') || key.startsWith('cyberZone'))){
+        const raw=localStorage.getItem(key);
+        try{payload.data[key]=JSON.parse(raw)}catch{payload.data[key]=raw}
+      }
+    }
+    // Ensure the active in-memory data is included even if a prior save failed.
+    payload.data.cz_works=works;
+    payload.data.cz_money=money;
+    payload.data.cz_staff=staff;
+    payload.data.cz_settings=settings;
+    payload.data.cz_requests=requests;
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='Cyber_Zone_Backup_'+new Date().toISOString().slice(0,10)+'.json';
+    a.style.display='none'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),30000);
+    const note=document.createElement('div');note.className='notice';note.textContent='Backup download requested. Check your phone Downloads folder.';
+    const page=document.getElementById('page-settings');if(page)page.prepend(note);
+    setTimeout(()=>note.remove(),7000);
+  } catch(e) { alert('Backup failed: '+(e?.message||e)+'. Please allow downloads in your browser and try again.'); }
+}
+function restoreBackup(){
+  const input=$('backupFile'); const file=input?.files?.[0];
+  if(!file){alert('Please choose a Cyber Zone JSON backup file first.');return;}
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const payload=JSON.parse(String(reader.result||''));
+      const data=payload?.data;
+      if(!data||typeof data!=='object'||Array.isArray(data))throw new Error('This does not look like a valid Cyber Zone backup.');
+      if(!confirm('Restore this backup on this phone? Current browser data for Cyber Zone may be replaced. Continue only if you have a current backup.'))return;
+      for(const [key,value] of Object.entries(data)){
+        if(key.startsWith('cz_')||key.startsWith('cyberZone'))localStorage.setItem(key,typeof value==='string'?value:JSON.stringify(value));
+      }
+      works=load('works',[]);money=load('money',[]);staff=load('staff',[]);settings=load('settings',{name:'Cyber Zone',phone:''});requests=load('requests',[]);
+      refresh();
+      alert('Backup restored on this phone. If signed in, cloud sync will occur when records are saved; please verify Supabase before using another device.');
+    }catch(e){alert('Could not restore backup: '+(e?.message||e));}
+  };
+  reader.onerror=()=>alert('Could not read the selected backup file.');
+  reader.readAsText(file);
+}
 function saveSettings(){settings.name=$('centerName').value.trim()||'Cyber Zone';settings.phone=$('centerPhone').value.trim();persist();alert('Settings saved.')}
 function exportPDF(){
   const rows=[['Date','Customer','Phone','Task','Reference','Charge','Paid','Due','Cost','Outstanding','Outstanding Paid','Status','Staff','Due Date','Notes'],...works.map(w=>[w.date,w.name,w.phone,w.task,w.ref,w.charge,w.paid,Number(w.charge||0)-Number(w.paid||0),w.cost,w.udhaar||0,w.udhaarDone||'No',w.status,(staff.find(x=>String(x.id)===String(w.staffId))||{}).name||w.staff||'',w.dueDate||'',w.notes||''])];
