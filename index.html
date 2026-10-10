@@ -56,7 +56,7 @@ body.cz-authenticated .app{display:grid!important}
 #publicRegistrationOpen::before { content:'★ '; }
 #publicRegistrationOpen::after { content:' ★'; }
 #publicRegistrationOpen:focus-visible { outline:3px solid #222; outline-offset:3px; }
-@media (prefers-reduced-motion: reduce) { #publicRegistrationOpen { animation:none !important; } }
+/* Keep Service Registration blinking continuously as requested. */
 </style>
 </head>
 <body>
@@ -75,7 +75,7 @@ body.cz-authenticated .app{display:grid!important}
 
 <div id="publicServicePage" style="display:none;min-height:100vh;background:#f3f6fb;padding:18px">
  <div style="max-width:760px;margin:0 auto;background:white;border:1px solid #dce4ef;border-radius:16px;padding:22px">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><h1 style="margin:0;color:#175cd3">Cyber Zone</h1><p style="margin:5px 0 0;color:#667085">Customer Service Portal</p></div><button type="button" id="staffLoginOpen" class="secondary">Management / Staff Login</button></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><h1 style="margin:0;color:#175cd3">Cyber Zone</h1><p style="margin:5px 0 0;color:#667085">Customer Service Portal</p></div><button type="button" id="staffLoginOpen" class="secondary">Management Login</button></div>
   <h2 style="margin-top:22px">Service Registration</h2><p style="color:#667085;font-size:14px">Choose a service, enter your details, upload the required documents, and submit your request.</p>
   <form id="publicServiceForm"><div class="formgrid">
    <div class="field"><label>Customer Name *</label><input id="pName" required></div>
@@ -95,11 +95,9 @@ body.cz-authenticated .app{display:grid!important}
  <div style="background:white;width:min(100%,420px);border:1px solid #dce4ef;border-radius:18px;padding:24px;box-shadow:0 12px 40px #13294b18">
   <button type="button" id="publicRegistrationOpen" style="width:100%;padding:12px;margin-bottom:18px;border:0;border-radius:9px;background:#087f5b;color:white;font-weight:700;cursor:pointer">NEW SERVICE REGISTRATION</button>
   <h2 style="margin:0 0 5px;color:#152746">Cyber Zone Login</h2>
-  <p style="color:#667085;margin:0 0 18px;font-size:14px">Select Management or Staff and enter your own ID and password.</p>
-  <label style="display:block;font-size:13px;margin-bottom:6px">Login Role</label>
-  <select id="loginRole" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px"><option value="Management">Management</option><option value="Staff">Staff</option></select>
+  <p style="color:#667085;margin:0 0 18px;font-size:14px">Only Management can log in using the Management ID and password.</p>
   <label style="display:block;font-size:13px;margin-bottom:6px">User ID / Mobile Number</label>
-  <input id="loginId" autocomplete="off" placeholder="Enter your Management/Staff email" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px">
+  <input id="loginId" autocomplete="off" placeholder="Enter czadmin or Management email" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px">
   <label style="display:block;font-size:13px;margin-bottom:6px">Password</label>
   <div style="display:flex;gap:6px;align-items:stretch;margin-bottom:12px">
    <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter your password" style="flex:1;min-width:0;padding:11px;border:1px solid #ccd5e2;border-radius:8px">
@@ -232,22 +230,15 @@ $('toggleLoginPassword')?.addEventListener('click',()=>{
  const show=input.type==='password'; input.type=show?'text':'password';
  button.textContent=show?'🙈':'👁'; button.setAttribute('aria-label',show?'Hide password':'Show password'); button.title=show?'Hide password':'Show password';
 });
-$('loginRole')?.addEventListener('change',()=>{
- const field=$('loginId'); if(!field)return;
- field.placeholder=$('loginRole').value==='Staff'?'Enter Staff ID (e.g. czstaff01) or registered email':'Enter czadmin or the registered Management email';
-});
-
-// Supabase Authentication. Management and Staff accounts must exist in Supabase Auth and have an active row in public.cz_org_members.
+// Supabase Authentication. Only the Management account is allowed to log in.
 $('loginBtn').addEventListener('click', async ()=>{
  const loginId=String($('loginId')?.value||'').trim().toLowerCase();
  const password=String($('loginPassword')?.value||'');
- const selectedRole=String($('loginRole')?.value||'Management');
- // Short aliases: Management may use czadmin; Staff may use a staff ID.
- // Auth accounts still must be created in Supabase Auth with the mapped email.
- const email = loginId.includes('@') ? loginId : (selectedRole==='Management' && loginId==='czadmin' ? 'cyberzone.biz@gmail.com' : (selectedRole==='Staff' && /^[a-z0-9._-]+$/.test(loginId) ? loginId+'@staff.cyberzone.sbs' : ''));
+ // Management alias: czadmin maps to the registered Management email.
+ const email = loginId.includes('@') ? loginId : (loginId==='czadmin' ? 'cyberzone.biz@gmail.com' : '');
  const err=$('loginError'); if(err)err.textContent='';
  if(!loginId||!password){if(err)err.textContent='Please enter your User ID/email and password.';return;}
- if(!email){if(err)err.textContent='Invalid User ID. Use czadmin for Management, or a valid Staff ID/email.';return;}
+ if(!email){if(err)err.textContent='Invalid User ID. Use czadmin or the registered Management email.';return;}
  if(err)err.textContent='Connecting securely…';
  try {
    const {data:authData,error:authError}=await supabaseClient.auth.signInWithPassword({email,password});
@@ -256,8 +247,8 @@ $('loginBtn').addEventListener('click', async ()=>{
    const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members').select('role,owner_id,active').eq('user_id',user.id).maybeSingle();
    if(memberError) throw memberError;
    if(!membership || membership.active===false) { await supabaseClient.auth.signOut(); throw new Error('This account has not been enabled by Management.'); }
-   const actualRole=membership.role==='management'?'Management':'Staff';
-   if(actualRole!==selectedRole){await supabaseClient.auth.signOut();throw new Error('Please choose the correct login type: '+actualRole+'.');}
+   if(membership.role!=='management'){await supabaseClient.auth.signOut();throw new Error('Access denied. Only the Management account can log in.');}
+   const actualRole='Management';
    localStorage.setItem('cz_logged_role',actualRole); localStorage.setItem('cz_logged_user',user.email||email); localStorage.setItem('cz_login_alias',loginId);
    document.body.classList.add('cz-authenticated');
    const gate=$('loginScreen'),pub=$('publicServicePage'),app=document.querySelector('.app');
@@ -268,9 +259,6 @@ $('loginBtn').addEventListener('click', async ()=>{
    if(err){
      const detail=String(e?.message||'');
      err.textContent='Login failed: '+(detail||'Check the account email and password.');
-     if(selectedRole==='Staff' && /Invalid login credentials|User not found|not enabled by Management|row-level security|permission/i.test(detail)){
-       err.textContent+=' Staff ID login maps to '+(loginId.includes('@')?loginId:loginId+'@staff.cyberzone.sbs')+'. Create that exact email in Supabase Authentication and add its Auth user UUID as an active Staff row in public.cz_org_members.';
-     }
    }
  }
 });
