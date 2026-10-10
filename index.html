@@ -71,6 +71,25 @@ body.cz-authenticated .app main{display:block!important;visibility:visible!impor
 body.cz-authenticated #loginScreen,body.cz-authenticated #publicServicePage{display:none!important}
 </style>
 
+
+<style id="cz-white-screen-recovery-css">
+html,body{min-height:100%;background:#eef3fb!important}
+body:not(.cz-authenticated) #loginScreen{display:flex!important;visibility:visible!important;opacity:1!important;color:#182230!important;background:#eef3fb!important;z-index:99999!important}
+body:not(.cz-authenticated) #loginScreen *{visibility:visible}
+body:not(.cz-authenticated) #loginScreen .cz-login-layout{display:grid!important}
+body:not(.cz-authenticated) #loginScreen .cz-login-card,body:not(.cz-authenticated) #loginScreen .cz-login-services{background:#fff!important;color:#182230!important}
+body:not(.cz-authenticated) .app{display:none!important}
+body.cz-authenticated #loginScreen{display:none!important}
+</style>
+<script id="cz-white-screen-recovery-startup">
+(function(){
+  // Clear stale visual-only login state; the Supabase session check below will restore a valid session.
+  document.body.classList.remove('cz-authenticated');
+  var app=document.querySelector('.app'); if(app){app.style.setProperty('display','none','important');}
+  var login=document.getElementById('loginScreen'); if(login){login.style.setProperty('display','flex','important');login.style.setProperty('visibility','visible','important');login.style.setProperty('opacity','1','important');}
+})();
+</script>
+
 </head>
 <body>
 <div id="loginGate" style="display:none">
