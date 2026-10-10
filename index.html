@@ -80,7 +80,7 @@ body.cz-authenticated .app{display:grid!important}
   <form id="publicServiceForm"><div class="formgrid">
    <div class="field"><label>Customer Name *</label><input id="pName" required></div>
    <div class="field"><label>Mobile Number *</label><input id="pPhone" required inputmode="numeric" maxlength="10" pattern="[0-9]{10}"></div>
-   <div class="field"><label>Which service do you need? *</label><select id="pService" required><option value="">Select a service</option><option>Income Certificate</option><option>Caste Certificate</option><option>Residence Certificate</option><option>PAN Card</option><option>Online Form</option><option>Print / Photocopy</option><option>Other Service</option></select></div>
+   <div class="field"><label>Which service do you need? *</label><select id="pService" required><option value="">Select a service</option><option>Passport Seva</option><option>Photo Editing Master</option><option>Advertisement Design</option><option>Visiting Card Design Maker</option><option>Labour Card</option><option>e-Shram Card</option><option>Udyam Registration</option><option>PDF Maker</option><option>Government Scheme Services</option><option>Sewa Yojan</option><option>Ayushman Card</option><option>Income Certificate</option><option>Caste Certificate</option><option>Residence Certificate</option><option>PAN Card</option><option>Online Form</option><option>Document Scan &amp; Upload</option><option>Print / Photocopy</option><option>Photo Resize &amp; Background Remove</option><option>Banner &amp; Poster Design</option><option>Resume &amp; Document Formatting</option><option>Other Service</option></select></div>
    <div class="field"><label>Work  </label><input id="pDetails"></div>
    <div class="field wide"><label>Upload Required Documents *</label><input id="pFiles" type="file" multiple required accept=".pdf,.jpg,.jpeg,.png"><small style="color:#667085">PDF, JPG, PNG; demo    2 MB </small><div id="pFileNames" style="font-size:12px;margin-top:6px"></div></div>
    <div class="field wide"><label>Additional Information</label><textarea id="pNote" rows="3"></textarea></div>
@@ -94,29 +94,42 @@ body.cz-authenticated .app{display:grid!important}
 <style>
 #loginScreen{overflow:auto}
 .cz-login-layout{width:min(1120px,100%);display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:22px;align-items:center;margin:auto}
-.cz-login-services{background:#fff;border:1px solid #dce4ef;border-radius:18px;padding:22px;box-shadow:0 12px 40px #13294b18}
+.cz-login-left{min-width:0}.cz-login-services{background:#fff;border:1px solid #dce4ef;border-radius:18px;padding:22px;box-shadow:0 12px 40px #13294b18}
 .cz-login-services h2{margin:0 0 6px;color:#175cd3;font-size:22px}.cz-login-services .cz-service-sub{margin:0 0 16px;color:#667085;font-size:13px}
 .cz-service-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.cz-service-item{display:flex;align-items:center;gap:10px;min-height:62px;padding:10px;border:1px solid #dce4ef;border-radius:12px;background:#f8faff;font-weight:800;color:#152746;animation:czServicePulse 1.35s ease-in-out infinite alternate}
+.cz-service-item{width:100%;text-align:left;display:flex;align-items:center;gap:10px;min-height:62px;padding:10px;border:1px solid #dce4ef;border-radius:12px;background:#f8faff;font-weight:800;color:#152746;animation:czServicePulse 1.35s ease-in-out infinite alternate}
 .cz-service-logo{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;border-radius:10px;background:#e0ecff;font-size:23px}
-.cz-service-item:nth-child(2n) .cz-service-logo{background:#dcfae6}.cz-service-item:nth-child(3n) .cz-service-logo{background:#fff0d2}
+.cz-service-item:hover{background:#eaf1ff;transform:translateY(-1px)}.cz-service-item:nth-child(2n) .cz-service-logo{background:#dcfae6}.cz-service-item:nth-child(3n) .cz-service-logo{background:#fff0d2}
 @keyframes czServicePulse{from{box-shadow:0 0 0 0 #175cd318}to{box-shadow:0 0 0 3px #175cd32b}}
 @media(max-width:760px){#loginScreen{align-items:flex-start!important;padding:12px!important}.cz-login-layout{grid-template-columns:minmax(0,1fr);gap:14px;width:100%;max-width:460px}.cz-login-card{width:100%!important;padding:20px!important}.cz-login-services{padding:16px}.cz-login-services h2{font-size:19px}.cz-service-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.cz-service-item{font-size:12px;min-height:62px;padding:8px;gap:7px}.cz-service-logo{width:32px;height:32px;flex-basis:32px;font-size:19px}}
 @media(min-width:761px){#loginScreen{padding:24px!important}.cz-login-card{width:100%!important;max-width:420px}}
 </style>
 <div id="loginScreen" style="position:fixed;inset:0;z-index:9999;background:#eef3fb;display:flex;align-items:center;justify-content:center;padding:18px">
  <div class="cz-login-layout">
- <div class="cz-login-services"><h2>Our Services</h2><p class="cz-service-sub">Professional digital services at Cyber Zone</p><div class="cz-service-grid">
-<div class="cz-service-item"><span class="cz-service-logo">🪪</span><span>Passport Photo</span></div>
-<div class="cz-service-item"><span class="cz-service-logo">🖼️</span><span>Photo Editing Master</span></div>
-<div class="cz-service-item"><span class="cz-service-logo">📢</span><span>Advertisement Design</span></div>
-<div class="cz-service-item"><span class="cz-service-logo">💳</span><span>Visiting Card Maker</span></div>
-<div class="cz-service-item"><span class="cz-service-logo">👷</span><span>Labour Card</span></div>
-<div class="cz-service-item"><span class="cz-service-logo">🧑‍💻</span><span>e-Shram Card</span></div>
-<div class="cz-service-item"><span class="cz-service-logo">📝</span><span>Online Forms</span></div>
-<div class="cz-service-item"><span class="cz-service-logo">📄</span><span>Document Scan &amp; Upload</span></div>
-<div class="cz-service-item"><span class="cz-service-logo">🖨️</span><span>Print &amp; Photocopy</span></div>
+ <div class="cz-login-left"><div class="cz-login-services"><h2>Our Services</h2><p class="cz-service-sub">Professional digital services at Cyber Zone</p><div class="cz-service-grid">
+<button type="button" class="cz-service-item" data-service="Passport Seva" aria-label="Register for Passport Seva"><span class="cz-service-logo">🪪</span><span>Passport Seva</span></button>
+<button type="button" class="cz-service-item" data-service="Photo Editing Master" aria-label="Register for Photo Editing Master"><span class="cz-service-logo">🖼️</span><span>Photo Editing Master</span></button>
+<button type="button" class="cz-service-item" data-service="Advertisement Design" aria-label="Register for Advertisement Design"><span class="cz-service-logo">📢</span><span>Advertisement Design</span></button>
+<button type="button" class="cz-service-item" data-service="Visiting Card Design Maker" aria-label="Register for Visiting Card Design Maker"><span class="cz-service-logo">💳</span><span>Visiting Card Design Maker</span></button>
+<button type="button" class="cz-service-item" data-service="Labour Card" aria-label="Register for Labour Card"><span class="cz-service-logo">👷</span><span>Labour Card</span></button>
+<button type="button" class="cz-service-item" data-service="e-Shram Card" aria-label="Register for e-Shram Card"><span class="cz-service-logo">🧑‍💻</span><span>e-Shram Card</span></button>
+<button type="button" class="cz-service-item" data-service="Udyam Registration" aria-label="Register for Udyam Registration"><span class="cz-service-logo">🏢</span><span>Udyam Registration</span></button>
+<button type="button" class="cz-service-item" data-service="PDF Maker" aria-label="Register for PDF Maker"><span class="cz-service-logo">📑</span><span>PDF Maker</span></button>
+<button type="button" class="cz-service-item" data-service="Government Scheme Services" aria-label="Register for Government Scheme Services"><span class="cz-service-logo">🏛️</span><span>Government Scheme Services</span></button>
+<button type="button" class="cz-service-item" data-service="Sewa Yojan" aria-label="Register for Sewa Yojan"><span class="cz-service-logo">💼</span><span>Sewa Yojan</span></button>
+<button type="button" class="cz-service-item" data-service="Online Forms" aria-label="Register for Online Forms"><span class="cz-service-logo">📝</span><span>Online Forms</span></button>
+<button type="button" class="cz-service-item" data-service="Document Scan & Upload" aria-label="Register for Document Scan & Upload"><span class="cz-service-logo">📄</span><span>Document Scan & Upload</span></button>
+<button type="button" class="cz-service-item" data-service="Print & Photocopy" aria-label="Register for Print & Photocopy"><span class="cz-service-logo">🖨️</span><span>Print & Photocopy</span></button>
+<button type="button" class="cz-service-item" data-service="Ayushman Card" aria-label="Register for Ayushman Card"><span class="cz-service-logo">🪪</span><span>Ayushman Card</span></button>
+<button type="button" class="cz-service-item" data-service="PAN Card Services" aria-label="Register for PAN Card Services"><span class="cz-service-logo">💳</span><span>PAN Card Services</span></button>
+<button type="button" class="cz-service-item" data-service="Income / Caste / Residence Certificate" aria-label="Register for Income / Caste / Residence Certificate"><span class="cz-service-logo">📋</span><span>Income / Caste / Residence Certificate</span></button>
+<button type="button" class="cz-service-item" data-service="Photo Resize & Background Remove" aria-label="Register for Photo Resize & Background Remove"><span class="cz-service-logo">📸</span><span>Photo Resize & Background Remove</span></button>
+<button type="button" class="cz-service-item" data-service="Online Application Services" aria-label="Register for Online Application Services"><span class="cz-service-logo">🌐</span><span>Online Application Services</span></button>
+<button type="button" class="cz-service-item" data-service="Resume & Document Formatting" aria-label="Register for Resume & Document Formatting"><span class="cz-service-logo">🧾</span><span>Resume & Document Formatting</span></button>
+<button type="button" class="cz-service-item" data-service="Banner & Poster Design" aria-label="Register for Banner & Poster Design"><span class="cz-service-logo">📢</span><span>Banner & Poster Design</span></button>
 </div></div>
+ <div class="cz-login-contact" style="margin-top:14px;background:#fff;border:1px solid #dce4ef;border-radius:14px;padding:14px 16px;box-shadow:0 5px 18px #13294b0b;font-size:13px;line-height:1.6;color:#152746"><b>Cyber Zone — Contact Us</b><br><b>Address:</b> Dhakka Karam Chand, Dhampur to Nehtaur Road, Nearby Ram Raheem Medical, Uttar Pradesh - 246761<br><b>Gmail:</b> <a href="mailto:cyberzone.biz@gmail.com">cyberzone.biz@gmail.com</a><br><b>Contact:</b> <a href="tel:7505436716">7505436716</a></div>
+ </div>
  <div class="cz-login-card" style="background:white;width:min(100%,420px);border:1px solid #dce4ef;border-radius:18px;padding:24px;box-shadow:0 12px 40px #13294b18">
  <div style="background:white;width:min(100%,420px);border:1px solid #dce4ef;border-radius:18px;padding:24px;box-shadow:0 12px 40px #13294b18">
   <button type="button" id="publicRegistrationOpen" style="width:100%;padding:12px;margin-bottom:18px;border:0;border-radius:9px;background:#087f5b;color:white;font-weight:700;cursor:pointer">NEW SERVICE REGISTRATION</button>
@@ -301,7 +314,16 @@ $('forgotPasswordOpen').addEventListener('click',()=>{
 $('resetPasswordBtn').addEventListener('click',()=>{
  const msg=$('resetMessage'); if(msg){msg.style.color='#b42318';msg.textContent='Password recovery is handled by Supabase Auth. Use the registered email and the secure password-reset flow configured by Management.';}
 });
+$('staffLoginOpen')?.addEventListener('click',()=>{$('publicServicePage').style.display='none';$('loginScreen').style.display='flex';});
 $('publicRegistrationOpen').addEventListener('click',()=>{document.body.classList.remove('cz-authenticated');const app=document.querySelector('.app');if(app)app.style.display='none';$('loginScreen').style.display='none';$('publicServicePage').style.display='block';});
+// Every service tile opens the New Service Registration form with that service selected.
+document.querySelectorAll('.cz-service-item[data-service]').forEach(tile=>tile.addEventListener('click',()=>{
+ const service=tile.dataset.service; const select=$('pService');
+ document.body.classList.remove('cz-authenticated'); const app=document.querySelector('.app'); if(app)app.style.display='none';
+ $('loginScreen').style.display='none'; $('publicServicePage').style.display='block';
+ if(select){let option=[...select.options].find(o=>o.text.trim().toLowerCase()===service.trim().toLowerCase()); if(!option){option=document.createElement('option');option.textContent=service;select.appendChild(option);} select.value=option.value || option.text;}
+ $('publicServicePage').scrollIntoView({behavior:'smooth',block:'start'});
+}));
 // Demo-only OTP login. Replace with server-verified SMS OTP before production use.
 let demoOtp = '';
 function sendDemoOTP(){
