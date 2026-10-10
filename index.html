@@ -86,7 +86,7 @@ body.cz-authenticated .app{display:grid!important}
   <form id="publicServiceForm"><div class="formgrid">
    <div class="field"><label>Customer Name *</label><input id="pName" required></div>
    <div class="field"><label>Mobile Number *</label><input id="pPhone" required inputmode="numeric" maxlength="10" pattern="[0-9]{10}"></div>
-   <div class="field"><label>Which service do you need? *</label><select id="pService" required><option value="">Select a service</option><option>Passport Seva</option><option>Photo Editing Master</option><option>Advertisement Design</option><option>Visiting Card Design Maker</option><option>Labour Card</option><option>e-Shram Card</option><option>Udyam Registration</option><option>PDF Maker</option><option>Government Scheme Services</option><option>Sewa Yojan</option><option>Ayushman Card</option><option>Income Certificate</option><option>Caste Certificate</option><option>Residence Certificate</option><option>PAN Card</option><option>Online Form</option><option>Document Scan &amp; Upload</option><option>Print / Photocopy</option><option>Photo Resize &amp; Background Remove</option><option>Banner &amp; Poster Design</option><option>Resume &amp; Document Formatting</option><option>Other Service</option></select></div>
+   <div class="field"><label>Which service do you need? *</label><select id="pService" required><option value="">Select a service</option><option>Passport Seva</option><option>Photo Editing Master</option><option>Advertisement Design</option><option>Visiting Card Design Maker</option><option>Labour Card</option><option>e-Shram Card</option><option>Udyam Registration</option><option>PDF Maker</option><option>Airtel Payment Bank Account Open</option><option>Fino Bank Account Open</option><option>Sewa Yojan</option><option>Ayushman Card</option><option>Income Certificate</option><option>Caste Certificate</option><option>Residence Certificate</option><option>PAN Card</option><option>Online Form</option><option>Document Scan &amp; Upload</option><option>Print / Photocopy</option><option>Photo Resize &amp; Background Remove</option><option>Banner &amp; Poster Design</option><option>Resume &amp; Document Formatting</option><option>Other Service</option></select></div>
    <div class="field"><label>Work  </label><input id="pDetails"></div>
    <div class="field wide"><label>Upload Required Documents *</label><input id="pFiles" type="file" multiple required accept=".pdf,.jpg,.jpeg,.png"><small style="color:#667085">PDF, JPG, PNG; demo    2 MB </small><div id="pFileNames" style="font-size:12px;margin-top:6px"></div></div>
    <div class="field wide"><label>Additional Information</label><textarea id="pNote" rows="3"></textarea></div>
@@ -138,7 +138,8 @@ body.cz-authenticated .app{display:grid!important}
 <button type="button" class="cz-service-item" data-service="e-Shram Card" aria-label="Register for e-Shram Card"><span class="cz-service-logo" aria-hidden="true">🪪</span><span>e-Shram Card</span></button>
 <button type="button" class="cz-service-item" data-service="Udyam Registration" aria-label="Register for Udyam Registration"><span class="cz-service-logo">🏢</span><span>Udyam Registration</span></button>
 <button type="button" class="cz-service-item" data-service="PDF Maker" aria-label="Register for PDF Maker"><span class="cz-service-logo">📑</span><span>PDF Maker</span></button>
-<button type="button" class="cz-service-item" data-service="Government Scheme Services" aria-label="Register for Government Scheme Services"><span class="cz-service-logo">🏛️</span><span>Government Scheme Services</span></button>
+<button type="button" class="cz-service-item" data-service="Airtel Payment Bank Account Open" aria-label="Register for Airtel Payment Bank Account Open"><span class="cz-service-logo">🏦</span><span>Airtel Payment Bank Account Open</span></button>
+<button type="button" class="cz-service-item" data-service="Fino Bank Account Open" aria-label="Register for Fino Bank Account Open"><span class="cz-service-logo">🏦</span><span>Fino Bank Account Open</span></button>
 <button type="button" class="cz-service-item" data-service="Sewa Yojan" aria-label="Register for Sewa Yojan"><span class="cz-service-logo">💼</span><span>Sewa Yojan</span></button>
 <button type="button" class="cz-service-item" data-service="Online Forms" aria-label="Register for Online Forms"><span class="cz-service-logo">📝</span><span>Online Forms</span></button>
 <button type="button" class="cz-service-item" data-service="Document Scan & Upload" aria-label="Register for Document Scan & Upload"><span class="cz-service-logo">📄</span><span>Document Scan & Upload</span></button>
@@ -322,12 +323,25 @@ $('loginBtn').addEventListener('click', async ()=>{
    }
    const actualRole='Management';
    localStorage.setItem('cz_logged_role',actualRole); localStorage.setItem('cz_logged_user',user.email||email); localStorage.setItem('cz_login_alias',loginId);
+   // Show the dashboard only after authentication succeeds. Cloud-sync failure must not leave a blank white screen.
+   try {
+     await czCloudLoad(ownerId);
+     czShowCloudStatus('Cloud sync connected.');
+   } catch(cloudError) {
+     console.error('Cloud load failed after login:', cloudError);
+     czCloudReady=false;
+     czShowCloudStatus('Logged in, but cloud sync failed: '+String(cloudError?.message||cloudError)+'. Local browser data is shown; check Supabase table permissions.', true);
+   }
    document.body.classList.add('cz-authenticated');
    const gate=$('loginScreen'),pub=$('publicServicePage'),app=document.querySelector('.app');
    if(gate)gate.style.display='none'; if(pub)pub.style.display='none'; if(app){app.classList.remove('hidden');app.style.display='grid';}
-   await czCloudLoad(ownerId);
    applyRoleView(); refresh(); if(err)err.textContent='';
  } catch(e) {
+   // Keep the login screen visible for authentication/authorization errors.
+   document.body.classList.remove('cz-authenticated');
+   if($('loginScreen'))$('loginScreen').style.display='flex';
+   if($('publicServicePage'))$('publicServicePage').style.display='none';
+   const app=document.querySelector('.app'); if(app)app.style.display='none';
    if(err){
      const detail=String(e?.message||'');
      err.textContent='Login failed: '+(detail||'Check the account email and password.');
@@ -643,10 +657,12 @@ supabaseClient.auth.getSession().then(async ({data,error})=>{
   const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members').select('role,owner_id,active').eq('user_id',user.id).maybeSingle();
   if(!memberError && membership){if(membership.active===false || membership.role!=='management'){await supabaseClient.auth.signOut();return;} ownerId=membership.owner_id||CZ_MANAGEMENT_UID;}
   localStorage.setItem('cz_logged_role','Management'); localStorage.setItem('cz_logged_user',user.email||'');
+  try { await czCloudLoad(ownerId); czShowCloudStatus('Cloud sync connected.'); }
+  catch(cloudError){ console.error('Cloud load failed during session restore:',cloudError); czCloudReady=false; czShowCloudStatus('Signed in, but cloud sync failed: '+String(cloudError?.message||cloudError)+'. Local browser data is shown.',true); }
   document.body.classList.add('cz-authenticated');
   if($('loginScreen'))$('loginScreen').style.display='none'; if($('publicServicePage'))$('publicServicePage').style.display='none';
   const app=document.querySelector('.app');if(app){app.classList.remove('hidden');app.style.display='grid';}
-  await czCloudLoad(ownerId); czShowCloudStatus('Cloud sync connected.'); applyRoleView(); refresh();
+  applyRoleView(); refresh();
  } catch(e){console.error('Session restore failed',e);}
 });
 </script>
