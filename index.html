@@ -58,6 +58,12 @@ body.cz-authenticated .app{display:grid!important}
 #publicRegistrationOpen:focus-visible { outline:3px solid #222; outline-offset:3px; }
 /* Keep Service Registration blinking continuously as requested. */
 </style>
+
+<style id="cz-login-required-fields-fix">
+.cz-login-field .cz-login-required{display:block!important;height:8px!important;min-height:8px!important;line-height:8px!important;margin:0 0 3px!important;padding:0!important;font-size:12px!important;color:#d92d20!important;font-weight:800!important;text-align:left!important}
+.cz-login-field .cz-required-star{display:inline-block!important;color:#d92d20!important;font-size:15px!important;line-height:8px!important}
+.cz-login-field input::placeholder{opacity:1;color:#667085}
+</style>
 </head>
 <body>
 <div id="loginGate" style="display:none">
@@ -154,11 +160,11 @@ body.cz-authenticated .app{display:grid!important}
   <h2 style="margin:0 0 5px;color:#152746">Cyber Zone Login</h2>
   <p style="color:#667085;margin:0 0 18px;font-size:14px">Only Management can log in using the Management ID and password.</p>
   <div class="cz-login-credentials">
-   <div class="cz-login-field"><label for="loginId" style="display:block;font-size:13px;margin-bottom:6px">User ID / Mobile Number</label>
-   <input id="loginId" autocomplete="off" placeholder="Enter czadmin or Management email" style="width:100%;min-width:0;padding:11px;border:1px solid #ccd5e2;border-radius:8px"></div>
-   <div class="cz-login-field"><label for="loginPassword" style="display:block;font-size:13px;margin-bottom:6px">Password</label>
+   <div class="cz-login-field"><label for="loginId" class="cz-login-required" aria-label="User ID required"><span class="cz-required-star">*</span></label>
+   <input id="loginId" autocomplete="off" placeholder="User ID" required aria-label="User ID" style="width:100%;min-width:0;padding:11px;border:1px solid #ccd5e2;border-radius:8px"></div>
+   <div class="cz-login-field"><label for="loginPassword" class="cz-login-required" aria-label="Password required"><span class="cz-required-star">*</span></label>
    <div style="display:flex;gap:6px;align-items:stretch;min-width:0">
-    <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter your password" style="flex:1;min-width:0;width:0;padding:11px;border:1px solid #ccd5e2;border-radius:8px">
+    <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Password" required aria-label="Password" style="flex:1;min-width:0;width:0;padding:11px;border:1px solid #ccd5e2;border-radius:8px">
     <button type="button" id="toggleLoginPassword" aria-label="Show password" title="Show password" class="secondary" style="padding:0 10px;min-width:42px;border:1px solid #ccd5e2;border-radius:8px">👁</button>
    </div></div>
   </div>
