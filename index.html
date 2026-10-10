@@ -81,12 +81,33 @@ body:not(.cz-authenticated) #loginScreen .cz-login-card,body:not(.cz-authenticat
 body:not(.cz-authenticated) .app{display:none!important}
 body.cz-authenticated #loginScreen{display:none!important}
 </style>
+<style id="cz-login-visibility-safety">
+body:not(.cz-authenticated) #loginScreen{display:flex!important;visibility:visible!important;opacity:1!important;position:fixed!important;inset:0!important;z-index:99999!important}
+body:not(.cz-authenticated) #loginScreen .cz-login-layout,
+body:not(.cz-authenticated) #loginScreen .cz-login-right,
+body:not(.cz-authenticated) #loginScreen .cz-login-card{visibility:visible!important;opacity:1!important}
+</style>
 <script id="cz-white-screen-recovery-startup">
 (function(){
-  // Clear stale visual-only login state; the Supabase session check below will restore a valid session.
-  document.body.classList.remove('cz-authenticated');
-  var app=document.querySelector('.app'); if(app){app.style.setProperty('display','none','important');}
-  var login=document.getElementById('loginScreen'); if(login){login.style.setProperty('display','flex','important');login.style.setProperty('visibility','visible','important');login.style.setProperty('opacity','1','important');}
+  // This script is in <head>, so wait until the body and login form exist.
+  function restoreLoginScreen(){
+    if (!document.body) return;
+    document.body.classList.remove('cz-authenticated');
+    var app=document.querySelector('.app');
+    if(app){app.classList.add('hidden');app.style.setProperty('display','none','important');}
+    var login=document.getElementById('loginScreen');
+    if(login){
+      login.style.setProperty('display','flex','important');
+      login.style.setProperty('visibility','visible','important');
+      login.style.setProperty('opacity','1','important');
+      login.style.setProperty('z-index','99999','important');
+    }
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',restoreLoginScreen,{once:true});
+  } else {
+    restoreLoginScreen();
+  }
 })();
 </script>
 
