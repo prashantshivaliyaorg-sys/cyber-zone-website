@@ -94,7 +94,7 @@ body.cz-authenticated .app{display:grid!important}
 </div>
 
 <style>
-#loginScreen{overflow:hidden}
+#loginScreen{overflow-x:hidden!important;overflow-y:auto!important; -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain}
 .cz-login-layout{width:min(1120px,100%);display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:22px;align-items:center;margin:auto}
 .cz-login-left{min-width:0;min-height:0}.cz-login-right{min-width:0;display:flex;flex-direction:column;gap:12px;align-self:center}.cz-login-card{position:relative;top:auto;align-self:start}.cz-login-services{max-height:calc(100dvh - 36px);overflow-y:auto}.cz-login-services{background:#fff;border:1px solid #dce4ef;border-radius:18px;padding:22px;box-shadow:0 12px 40px #13294b18}
 .cz-login-services h2{margin:0 0 6px;color:#175cd3;font-size:22px}.cz-login-services .cz-service-sub{margin:0 0 16px;color:#667085;font-size:13px}
@@ -105,6 +105,21 @@ body.cz-authenticated .app{display:grid!important}
 @keyframes czServicePulse{from{box-shadow:0 0 0 0 #175cd318}to{box-shadow:0 0 0 3px #175cd32b}}
 @media(max-width:760px){#loginScreen{align-items:flex-start!important;justify-content:center!important;padding:10px!important;height:100dvh;overflow-y:auto;overflow-x:hidden}.cz-login-layout{height:auto;min-height:100%;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;gap:12px;width:100%;max-width:460px;align-items:start;margin:auto}.cz-login-left{overflow:visible;grid-row:2}.cz-login-right{grid-row:1;width:100%;align-self:start}.cz-login-card{position:relative;top:auto;width:100%!important;padding:16px!important}.cz-login-card>div{width:100%!important;padding:16px!important;box-sizing:border-box}.cz-login-services{padding:16px;max-height:44dvh;height:auto;overflow-y:auto}.cz-login-services h2{font-size:19px}.cz-service-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.cz-service-item{font-size:12px;min-height:62px;padding:8px;gap:7px}.cz-service-logo{width:32px;height:32px;flex-basis:32px;font-size:19px}.cz-login-contact{overflow-wrap:anywhere;font-size:12px!important;padding:12px!important}}
 @media(min-width:761px){#loginScreen{padding:24px!important}.cz-login-right{width:100%;max-width:420px}.cz-login-card{width:100%!important;max-width:420px}.cz-login-contact{overflow-wrap:anywhere}}
+
+.cz-login-credentials{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:start;margin-bottom:12px}
+.cz-login-field{min-width:0}
+.cz-login-field input{box-sizing:border-box;font-size:14px}
+.cz-login-layout{min-height:min-content}
+@media(max-width:760px){
+ #loginScreen{height:100dvh!important;min-height:100dvh;overflow-y:auto!important;align-items:flex-start!important;justify-content:flex-start!important;padding:10px!important}
+ .cz-login-layout{min-height:min-content;height:auto;padding-bottom:16px}
+ .cz-login-card{max-height:none;overflow:visible}
+ .cz-login-credentials{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+ .cz-login-field label{font-size:12px!important}
+ .cz-login-field input{padding:10px 8px!important;font-size:12px!important}
+ .cz-login-field input::placeholder{font-size:11px}
+}
+@media(max-width:360px){.cz-login-credentials{gap:6px}.cz-login-field input{padding:9px 6px!important;font-size:11px!important}.cz-login-field input::placeholder{font-size:10px}}
 </style>
 <div id="loginScreen" style="position:fixed;inset:0;z-index:9999;background:#eef3fb;display:flex;align-items:center;justify-content:center;padding:18px">
  <div class="cz-login-layout">
@@ -138,12 +153,14 @@ body.cz-authenticated .app{display:grid!important}
   <button type="button" id="publicRegistrationOpen" style="width:100%;padding:12px;margin-bottom:18px;border:0;border-radius:9px;background:#087f5b;color:white;font-weight:700;cursor:pointer">NEW SERVICE REGISTRATION</button>
   <h2 style="margin:0 0 5px;color:#152746">Cyber Zone Login</h2>
   <p style="color:#667085;margin:0 0 18px;font-size:14px">Only Management can log in using the Management ID and password.</p>
-  <label style="display:block;font-size:13px;margin-bottom:6px">User ID / Mobile Number</label>
-  <input id="loginId" autocomplete="off" placeholder="Enter czadmin or Management email" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px">
-  <label style="display:block;font-size:13px;margin-bottom:6px">Password</label>
-  <div style="display:flex;gap:6px;align-items:stretch;margin-bottom:12px">
-   <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter your password" style="flex:1;min-width:0;padding:11px;border:1px solid #ccd5e2;border-radius:8px">
-   <button type="button" id="toggleLoginPassword" aria-label="Show password" title="Show password" class="secondary" style="padding:0 13px;min-width:48px;border:1px solid #ccd5e2;border-radius:8px">👁</button>
+  <div class="cz-login-credentials">
+   <div class="cz-login-field"><label for="loginId" style="display:block;font-size:13px;margin-bottom:6px">User ID / Mobile Number</label>
+   <input id="loginId" autocomplete="off" placeholder="Enter czadmin or Management email" style="width:100%;min-width:0;padding:11px;border:1px solid #ccd5e2;border-radius:8px"></div>
+   <div class="cz-login-field"><label for="loginPassword" style="display:block;font-size:13px;margin-bottom:6px">Password</label>
+   <div style="display:flex;gap:6px;align-items:stretch;min-width:0">
+    <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter your password" style="flex:1;min-width:0;width:0;padding:11px;border:1px solid #ccd5e2;border-radius:8px">
+    <button type="button" id="toggleLoginPassword" aria-label="Show password" title="Show password" class="secondary" style="padding:0 10px;min-width:42px;border:1px solid #ccd5e2;border-radius:8px">👁</button>
+   </div></div>
   </div>
   <button type="button" id="loginBtn" style="width:100%;padding:12px;border:0;border-radius:8px;background:#175cd3;color:white;font-weight:700">Login </button>
   <button type="button" id="forgotPasswordOpen" class="secondary" style="width:100%;margin-top:12px">Forgot Password?</button>
