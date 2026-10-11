@@ -532,26 +532,31 @@ function renderRequests(){
  $('requestRows').innerHTML=requests.filter(r=>(!f||r.status===f)&&[r.name,r.phone,r.service,r.details].join(' ').toLowerCase().includes(q)).map(r=>`<tr><td>${esc(r.date)}</td><td><b>${esc(r.name)}</b><br>${esc(r.phone)}</td><td>${esc(r.service)}<br>${esc(r.details||'')}</td><td>${(r.files||[]).map(f=>esc(f.name)).join('<br>')||'—'}</td><td>${esc(r.status)}</td><td><button class="secondary mini" onclick="setRequestStatus('${r.id}','Approved')">Approve</button> <button class="danger mini" onclick="setRequestStatus('${r.id}','Rejected')">Reject</button> <button class="secondary mini" onclick="setRequestStatus('${r.id}','In Process')">Process</button> <button class="secondary mini" onclick="setRequestStatus('${r.id}','Completed')">Complete</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">No applications received yet.</td></tr>';
 }
 function setRequestStatus(idv,status){const r=requests.find(x=>x.id===idv);if(!r)return;r.status=status;save('requests',requests);renderRequests();alert('Request status set to '+status+'   ')}
-function updatePublicTotalProfit(){
+async function updatePublicTotalProfit(){
+ // Public page receives aggregate totals only through a narrowly scoped Supabase RPC.
+ // Never fetch or expose the full works/money records before login.
+ const put=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
  try {
-  const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem('cz_'+key)||'null')??fallback}catch(e){return fallback}};
-  const ws0=read('works',[]), ms0=read('money',[]);
-  const ws=Array.isArray(ws0)?ws0:[], ms=Array.isArray(ms0)?ms0:[];
-  // Count the same customer only once when both name and mobile match. Work records remain separate.
-  const customers=new Set(ws.map(w=>String(w.name||'').trim().toLowerCase()+'|'+String(w.phone||'').replace(/\D/g,''))).size;
-  const workCosts=ws.reduce((sum,w)=>sum+(Number(w.cost)||0),0);
-  const extraExpenses=ms.filter(m=>m.type==='expense').reduce((sum,m)=>sum+(Number(m.amount)||0),0);
-  const expenses=workCosts+extraExpenses;
-  // Profit uses money actually received, less work cost and commission.
-  const profit=ws.reduce((sum,w)=>sum+(Number(w.paid)||0)-(Number(w.cost)||0)-(Number(w.commission)||0),0);
-  const udhaar=ws.reduce((sum,w)=>sum+(w.udhaarDone==='Yes'?0:Math.max(0,(Number(w.charge)||0)-(Number(w.paid)||0))),0);
-  const put=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
-  put('publicTotalCustomers',String(customers));put('publicTotalProfit',ru(profit));put('publicTotalExpenses',ru(expenses));put('publicTotalUdhaar',ru(udhaar));
-  const pie=document.getElementById('publicPieChart');
-  if(pie){const vals=[Math.max(0,customers),Math.max(0,profit),Math.max(0,expenses),Math.max(0,udhaar)];const total=vals.reduce((a,b)=>a+b,0);if(total>0){let at=0;const colors=['#123a63','#50c9c8','#f6b73c','#f05a28'];const stops=vals.map((v,i)=>{const a=at;at+=v/total*360;return `${colors[i]} ${a}deg ${at}deg`});pie.style.background=`conic-gradient(${stops.join(',')})`}else pie.style.background='conic-gradient(#d9e2ef 0deg 360deg)';}
- } catch(e) { console.warn('Could not update public overview chart',e); }
+   const {data,error}=await supabaseClient.rpc('cz_public_overview');
+   if(error) throw error;
+   const result=Array.isArray(data)?(data[0]||{}):(data||{});
+   const customers=Number(result.total_customers)||0;
+   const profit=Number(result.total_profit)||0;
+   const expenses=Number(result.total_expenses)||0;
+   const udhaar=Number(result.total_udhaar)||0;
+   put('publicTotalCustomers',String(customers));put('publicTotalProfit',ru(profit));put('publicTotalExpenses',ru(expenses));put('publicTotalUdhaar',ru(udhaar));
+   const pie=document.getElementById('publicPieChart');
+   if(pie){const vals=[Math.max(0,customers),Math.max(0,profit),Math.max(0,expenses),Math.max(0,udhaar)];const total=vals.reduce((a,b)=>a+b,0);if(total>0){let at=0;const colors=['#123a63','#50c9c8','#f6b73c','#f05a28'];const stops=vals.map((v,i)=>{const a=at;at+=v/total*360;return `${colors[i]} ${a}deg ${at}deg`});pie.style.background=`conic-gradient(${stops.join(',')})`}else pie.style.background='conic-gradient(#d9e2ef 0deg 360deg)';}
+   const note=document.querySelector('#publicStatsChart > p');if(note)note.textContent='Live summary from Cyber Zone server. Personal records are not shown.';
+ } catch(e) {
+   console.warn('Public online overview unavailable:',e);
+   const note=document.querySelector('#publicStatsChart > p');if(note)note.textContent='Live overview is temporarily unavailable. Please try again later.';
+ }
 }
 updatePublicTotalProfit();
+// Refresh the public aggregate when the visitor returns to the page.
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)updatePublicTotalProfit();});
+window.addEventListener('focus',updatePublicTotalProfit);
 
 // Public reviews are stored locally on this device; no database/security settings are changed.
 (function(){
@@ -650,7 +655,7 @@ supabaseClient.auth.getSession().then(async ({data,error})=>{
   document.body.classList.add('cz-authenticated');
   if($('loginScreen'))$('loginScreen').style.display='none'; if($('publicServicePage'))$('publicServicePage').style.display='none';
   const app=document.querySelector('.app');if(app){app.classList.remove('hidden');app.style.display='grid';}
-  await czCloudLoad(membership.owner_id); czShowCloudStatus('Cloud sync connected.'); applyRoleView(); refresh();
+  await czCloudLoad(membership.owner_id); czShowCloudStatus('Cloud sync connected.'); applyRoleView(); refresh(); updatePublicTotalProfit();
  } catch(e){console.error('Session restore failed',e);}
 });
 </script>
