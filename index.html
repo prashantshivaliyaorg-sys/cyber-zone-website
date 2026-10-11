@@ -147,7 +147,7 @@ body.cz-authenticated .app{display:grid!important}
    <p style="font-size:11px;color:#667085;margin:10px 0 0">Values refresh from data available in this browser.</p>
   </section>
   <section class="cz-review-box" id="publicReviewSection">
-   <h3 style="margin:0;color:#152746;font-size:16px">Rate & Review Cyber Zone</h3><p style="margin:5px 0;color:#667085;font-size:13px">Tell us about your experience.</p><div id="publicRatingSummary" style="margin:8px 0 12px;font-size:14px;color:#344054" aria-live="polite">⭐ 0.0 / 5 (0 ratings)</div>
+   <h3 style="margin:0;color:#152746;font-size:16px">Rate & Review Cyber Zone</h3><p style="margin:5px 0;color:#667085;font-size:13px">Tell us about your experience.</p>
    <form id="publicReviewForm"><label for="publicReviewName" style="font-size:13px">Your name (optional)</label><input id="publicReviewName" maxlength="60" placeholder="Enter your name" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px;margin:5px 0 8px">
    <div style="font-size:13px">Your rating</div><div class="cz-stars" id="publicStarPicker" role="radiogroup" aria-label="Choose rating"> <button class="cz-star-btn" type="button" data-rating="1" aria-label="1 star">★</button><button class="cz-star-btn" type="button" data-rating="2" aria-label="2 stars">★</button><button class="cz-star-btn" type="button" data-rating="3" aria-label="3 stars">★</button><button class="cz-star-btn" type="button" data-rating="4" aria-label="4 stars">★</button><button class="cz-star-btn" type="button" data-rating="5" aria-label="5 stars">★</button></div>
    <label for="publicReviewText" style="font-size:13px">Review</label><textarea id="publicReviewText" rows="3" maxlength="500" placeholder="Write your review" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px;margin:5px 0 10px"></textarea><button type="submit" style="width:100%;padding:11px;border:0;border-radius:8px;background:#175cd3;color:white;font-weight:700">Submit Rating</button><div id="publicReviewMessage" style="font-size:13px;margin-top:8px" aria-live="polite"></div></form>
@@ -166,7 +166,7 @@ body.cz-authenticated .app{display:grid!important}
   <div id="forgotBox" style="display:none;margin-top:14px;padding:12px;border:1px solid #dce4ef;border-radius:10px"><b>Reset Password</b><p style="font-size:12px;color:#667085">Demo recovery uses the registered mobile number and recovery code. For a real public website, server-side OTP verification is required.</p><label style="display:block;font-size:13px;margin:8px 0 4px">Registered Mobile Number</label><input id="resetPhone" inputmode="numeric" maxlength="10" placeholder="7818942933" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px"><label style="display:block;font-size:13px;margin:8px 0 4px">Recovery Code</label><input id="resetCode" placeholder="Enter recovery code" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px"><label style="display:block;font-size:13px;margin:8px 0 4px">New Password</label><input id="resetNewPassword" type="password" minlength="8" placeholder="At least 8 characters" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px"><button type="button" id="resetPasswordBtn" style="width:100%;margin-top:10px">New Password  </button><div id="resetMessage" style="font-size:13px;margin-top:8px"></div></div>
   <div id="loginError" style="color:#b42318;font-size:13px;margin-top:12px"></div>
  </div>
- <div style="flex-basis:100%;text-align:center;color:#475467;font-size:12px;line-height:1.7;padding:4px 8px"><div>Address: Dhakka Karam Chand, Nearby Ram Raheem Medical, Dhampur to Nehtaur Road</div><div>Mobile: <a href="tel:7505436716" style="color:inherit;text-decoration:none">7505436716</a> &nbsp; | &nbsp; Email: cyberzone.biz@gmail.com</div></div>
+ <div style="flex-basis:100%;text-align:center;color:#475467;font-size:12px;line-height:1.7;padding:4px 8px"><div>Address: Dhakka Karam Chand, Nearby Ram Raheem Medical, Dhampur to Nehtaur Road</div><div>Mobile: 7505436719 &nbsp; | &nbsp; Email: cyberzone.biz@gmail.com</div></div>
 </div>
 
 <div class="app">
@@ -333,59 +333,61 @@ function czHasUsefulData(key,value){
   if(key==='settings') return !!(value && typeof value==='object' && (String(value.name||'').trim() && String(value.name).trim()!=='Cyber Zone' || String(value.phone||'').trim()));
   return Array.isArray(value) ? value.length>0 : !!(value && typeof value==='object' && Object.keys(value).length>0);
 }
+function czRecordKey(item){
+  if(item && item.id!=null && String(item.id)!=='') return 'id:'+String(item.id);
+  if(item && item.phone) return 'phone:'+String(item.phone).replace(/\D/g,'')+'|'+String(item.name||'').trim().toLowerCase();
+  return 'json:'+JSON.stringify(item);
+}
+function czMergeState(key, cloudValue, localValue, prefer='local'){
+  if(!Array.isArray(cloudValue)||!Array.isArray(localValue)){
+    if(prefer==='local' && czHasUsefulData(key,localValue)) return localValue;
+    return cloudValue===undefined || cloudValue===null ? localValue : cloudValue;
+  }
+  const merged=[], indexes=new Map();
+  const add=(item,source)=>{
+    const k=czRecordKey(item);
+    if(!indexes.has(k)){indexes.set(k,merged.length);merged.push(item);return;}
+    const i=indexes.get(k);
+    if(source===prefer) merged[i]=item;
+  };
+  // Cloud first keeps existing shared records; local additions are appended. For duplicate IDs,
+  // the selected preferred source wins without deleting unrelated records from either phone.
+  cloudValue.forEach(x=>add(x,'cloud'));
+  localValue.forEach(x=>add(x,'local'));
+  if(prefer==='cloud'){
+    // Replace matching local versions with the cloud version after the union is formed.
+    const byKey=new Map(cloudValue.map(x=>[czRecordKey(x),x]));
+    for(let i=0;i<merged.length;i++){const k=czRecordKey(merged[i]);if(byKey.has(k))merged[i]=byKey.get(k);}
+  }
+  return merged;
+}
+function czSameJson(a,b){try{return JSON.stringify(a)===JSON.stringify(b)}catch(e){return false}}
 async function czCloudLoad(ownerId){
- const {data:authData,error:authError}=await supabaseClient.auth.getUser();
- if(authError) throw new Error('Could not verify the signed-in account: '+authError.message);
- const userId=authData?.user?.id;
- if(!userId) throw new Error('Please sign in again; no active Supabase session was found.');
- const targetOwner=String(ownerId||userId);
- let {data,error}=await supabaseClient.from('cz_app_state').select('state_key,state_json').eq('owner_id',targetOwner);
- if(error) throw new Error('Could not read cloud data: '+error.message);
- let rows=data||[];
- // Some older organization setups use the signed-in user ID as owner_id. Try that only if the membership owner query returned no visible rows.
- if(rows.length===0 && targetOwner!==userId){
-   const fallback=await supabaseClient.from('cz_app_state').select('state_key,state_json').eq('owner_id',userId);
-   if(fallback.error) throw new Error('Could not read cloud data: '+fallback.error.message);
-   if((fallback.data||[]).length){rows=fallback.data;ownerId=userId;}
- }
+ czCloudOwnerId=ownerId;
+ const {data,error}=await supabaseClient.from('cz_app_state').select('state_key,state_json').eq('owner_id',ownerId);
+ if(error) throw error;
+ const rows=data||[];
  const cloudMap=new Map(rows.filter(r=>CZ_STATE_KEYS.includes(r.state_key)).map(r=>[r.state_key,r.state_json]));
  const defaults={works:[],money:[],staff:[],settings:{name:'Cyber Zone',phone:''},requests:[]};
  czCloudReady=false;
  const toUpload=[];
- // If Supabase returns no visible rows on a new phone, never upload blank defaults over existing cloud data.
- // Show a useful error instead; an RLS policy can hide rows without returning a SQL error.
- const hasAnyLocal=CZ_STATE_KEYS.some(key=>czHasUsefulData(key,load(key,defaults[key])));
- if(rows.length===0 && !hasAnyLocal){
-   throw new Error('Supabase returned no cloud records for this account. Your saved data was not changed. Check the cz_app_state SELECT RLS policy and confirm this login has the same owner_id as the existing records.');
- }
  for(const key of CZ_STATE_KEYS){
-   const localValue=load(key,defaults[key]);
+   const localValue=czPendingCloudState.has(key)?czPendingCloudState.get(key):load(key,defaults[key]);
    const hasCloud=cloudMap.has(key);
-   const cloudValue=cloudMap.get(key);
-   if(czPendingCloudState.has(key)){
-     const pendingValue=czPendingCloudState.get(key);
-     localStorage.setItem('cz_'+key,JSON.stringify(pendingValue));
-     toUpload.push([key,pendingValue]);
-     czPendingCloudState.delete(key);
-   } else if(hasCloud){
-     // Cloud is authoritative when a row exists; never replace it with empty local defaults.
-     if(!czHasUsefulData(key,cloudValue) && czHasUsefulData(key,localValue)){
-       localStorage.setItem('cz_'+key,JSON.stringify(localValue));
-       toUpload.push([key,localValue]);
-     } else {
-       localStorage.setItem('cz_'+key,JSON.stringify(cloudValue));
-     }
-   } else if(czHasUsefulData(key,localValue)){
-     localStorage.setItem('cz_'+key,JSON.stringify(localValue));
-     toUpload.push([key,localValue]);
-   } else {
-     localStorage.setItem('cz_'+key,JSON.stringify(defaults[key]));
-   }
+   const cloudValue=hasCloud?cloudMap.get(key):undefined;
+   let chosen;
+   if(!hasCloud) chosen=localValue;
+   else if(Array.isArray(cloudValue)&&Array.isArray(localValue)) chosen=czMergeState(key,cloudValue,localValue,'local');
+   else if(!czHasUsefulData(key,cloudValue)&&czHasUsefulData(key,localValue)) chosen=localValue;
+   else chosen=cloudValue;
+   localStorage.setItem('cz_'+key,JSON.stringify(chosen));
+   if(!hasCloud || !czSameJson(chosen,cloudValue)) toUpload.push([key,chosen]);
+   czPendingCloudState.delete(key);
  }
  works=load('works',[]); money=load('money',[]); staff=load('staff',[]); settings=load('settings',defaults.settings); requests=load('requests',[]);
  czCloudReady=true;
  for(const [key,value] of toUpload) await czCloudSave(key,value);
- czShowCloudStatus('Cloud sync connected. Loaded '+works.length+' works, '+staff.length+' staff, '+money.length+' expense records from Supabase.');
+ czShowCloudStatus('Cloud sync connected. Existing phone records have been merged with shared cloud data.');
 }
 async function czCloudSave(key,value){
  const {data:authData,error:authError}=await supabaseClient.auth.getUser();
@@ -395,21 +397,62 @@ async function czCloudSave(key,value){
   .select('owner_id,active').eq('user_id',authData.user.id).maybeSingle();
  if(memberError) throw new Error('Could not read organization membership: '+memberError.message);
  if(!membership||membership.active===false) throw new Error('No active organization membership');
- const row={owner_id:membership.owner_id,state_key:key,state_json:value,updated_at:new Date().toISOString()};
- const {error:upsertError}=await supabaseClient.from('cz_app_state').upsert(row,{onConflict:'owner_id,state_key'});
- if(!upsertError) return;
- const {data:existing,error:selectError}=await supabaseClient.from('cz_app_state')
-  .select('id').eq('owner_id',row.owner_id).eq('state_key',key).limit(1).maybeSingle();
- if(selectError) throw new Error('Cloud upsert failed ('+upsertError.message+'); lookup failed ('+selectError.message+').');
- if(existing?.id){
-  const {error:updateError}=await supabaseClient.from('cz_app_state').update({state_json:value,updated_at:row.updated_at}).eq('id',existing.id);
-  if(updateError) throw new Error('Cloud update failed: '+updateError.message);
- } else {
-  const {error:insertError}=await supabaseClient.from('cz_app_state').insert(row);
-  if(insertError) throw new Error('Cloud insert failed: '+insertError.message+' (upsert issue: '+upsertError.message+').');
+ const ownerId=membership.owner_id;
+ if(czCloudOwnerId && ownerId!==czCloudOwnerId) throw new Error('Signed-in account belongs to a different Cyber Zone owner.');
+ let mergedValue=value;
+ // Merge array data with the current cloud version before writing, so one phone cannot erase
+ // unrelated records created on the other phone.
+ const {data:existingRow,error:readError}=await supabaseClient.from('cz_app_state')
+   .select('state_json').eq('owner_id',ownerId).eq('state_key',key).maybeSingle();
+ if(readError) throw new Error('Could not read cloud '+key+' before saving: '+readError.message);
+ if(existingRow && Array.isArray(existingRow.state_json) && Array.isArray(value)){
+   mergedValue=czMergeState(key,existingRow.state_json,value,'local');
  }
+ const row={owner_id:ownerId,state_key:key,state_json:mergedValue,updated_at:new Date().toISOString()};
+ const {error:upsertError}=await supabaseClient.from('cz_app_state').upsert(row,{onConflict:'owner_id,state_key'});
+ if(upsertError) throw new Error('Cloud save failed for '+key+': '+upsertError.message);
+ localStorage.setItem('cz_'+key,JSON.stringify(mergedValue));
+ if(key==='works') works=mergedValue;
+ if(key==='money') money=mergedValue;
+ if(key==='staff') staff=mergedValue;
+ if(key==='requests') requests=mergedValue;
+ if(key==='settings') settings=mergedValue;
 }
-function persist(){save('works',works);save('money',money);save('staff',staff);save('settings',settings);save('requests',requests);refresh();renderWork();renderCustomers();renderMoney();renderStaff();renderRequests();if(typeof updatePublicTotalProfit==='function')updatePublicTotalProfit();}
+// Poll the shared database and merge records from both phones rather than replacing one phone's array.
+async function czRefreshSharedState(){
+ if(!czCloudReady || document.hidden) return;
+ try{
+  const {data:authData,error:authError}=await supabaseClient.auth.getUser();
+  if(authError||!authData?.user) return;
+  const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members')
+   .select('owner_id,active').eq('user_id',authData.user.id).maybeSingle();
+  if(memberError||!membership||membership.active===false) return;
+  if(czCloudOwnerId && membership.owner_id!==czCloudOwnerId) return;
+  const {data,error}=await supabaseClient.from('cz_app_state').select('state_key,state_json').eq('owner_id',membership.owner_id);
+  if(error) throw error;
+  const cloudMap=new Map((data||[]).filter(r=>CZ_STATE_KEYS.includes(r.state_key)).map(r=>[r.state_key,r.state_json]));
+  let changed=false;const upload=[];
+  for(const key of CZ_STATE_KEYS){
+   if(czSavingCounts.has(key)||czPendingCloudState.has(key)||!cloudMap.has(key)) continue;
+   const cloudValue=cloudMap.get(key),localValue=load(key,key==='settings'?{name:'Cyber Zone',phone:''}:[]);
+   let merged;
+   if(Array.isArray(cloudValue)&&Array.isArray(localValue)) merged=czMergeState(key,cloudValue,localValue,'cloud');
+   else merged=cloudValue;
+   if(!czSameJson(merged,cloudValue)) upload.push([key,merged]);
+   if(!czSameJson(localValue,merged)){localStorage.setItem('cz_'+key,JSON.stringify(merged));changed=true;}
+  }
+  if(changed){works=load('works',[]);money=load('money',[]);staff=load('staff',[]);settings=load('settings',{name:'Cyber Zone',phone:''});requests=load('requests',[]);refresh();}
+  for(const [key,value] of upload){
+   if(czSavingCounts.has(key)) continue;
+   const count=(czSavingCounts.get(key)||0)+1;czSavingCounts.set(key,count);
+   try{await czCloudSave(key,value);}finally{const left=(czSavingCounts.get(key)||1)-1;if(left<=0)czSavingCounts.delete(key);else czSavingCounts.set(key,left);}
+  }
+ }catch(e){console.warn('Shared cloud refresh failed',e);czShowCloudStatus('Cloud sync refresh failed: '+(e?.message||e),true);}
+}
+setInterval(czRefreshSharedState,10000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)czRefreshSharedState()});
+window.addEventListener('focus',czRefreshSharedState);
+function persist(){save('works',works);save('money',money);save('staff',staff);save('settings',settings);save('requests',requests);refresh();if(typeof updatePublicTotalProfit==='function')updatePublicTotalProfit();}
 function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function n(v){return Number(v)||0} function ru(v){return '₹'+n(v).toLocaleString('en-IN',{maximumFractionDigits:2})}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -432,7 +475,7 @@ function updatePendingRequired(){
 }
 ['wCharge','wPaid'].forEach(idv=>{const el=$(idv);if(el){el.addEventListener('input',updatePendingRequired);el.addEventListener('change',updatePendingRequired);}});
 if($('wUdhaarDone'))$('wUdhaarDone').addEventListener('change',()=>{const pending=$('wUdhaarDone').value==='No';['wName','wPhone','wAddress'].forEach(idv=>{const el=$(idv);if(el)el.required=pending;});});
-$('workForm').addEventListener('submit',e=>{e.preventDefault();const charge=n($('wCharge').value),paid=n($('wPaid').value);if(paid>charge){alert('Amount Received cannot be greater than Total Charge.');return}const wid=$('workId').value;const pending=paid<charge||$('wUdhaarDone').value==='No';if(pending&&(!$('wName').value.trim()||!$('wPhone').value.trim()||!$('wAddress').value.trim())){alert('Payment pending hai, isliye Customer Name, Mobile Number aur Address bharna zaroori hai.');return}const obj={id:wid||id(),name:$('wName').value.trim(),phone:$('wPhone').value.trim(),address:$('wAddress').value.trim(),task:$('wTask').value.trim(),ref:'',charge,paid,cost:n($('wCost').value),commission:0,udhaar:Math.max(0,charge-paid),udhaarDone:(paid<charge||$('wUdhaarDone').value==='No')?'No':'Yes',status:$('wStatus').value,date:wid?(works.find(x=>x.id===wid)?.date||today()):today(),dueDate:$('wDueDate').value,staffId:'',notes:'',updated:new Date().toISOString()};if(wid){const i=works.findIndex(w=>w.id===wid);if(i>=0){works[i]=obj}}else{works.unshift(obj)}persist();resetWorkForm();toggleWorkForm(false);showPage('work');renderWork();renderCustomers();refresh();requestAnimationFrame(()=>{renderWork();renderCustomers();})});
+$('workForm').addEventListener('submit',e=>{e.preventDefault();const charge=n($('wCharge').value),paid=n($('wPaid').value);if(paid>charge){alert('Amount Received cannot be greater than Total Charge.');return}const wid=$('workId').value;const pending=paid<charge||$('wUdhaarDone').value==='No';if(pending&&(!$('wName').value.trim()||!$('wPhone').value.trim()||!$('wAddress').value.trim())){alert('Payment pending hai, isliye Customer Name, Mobile Number aur Address bharna zaroori hai.');return}const obj={id:wid||id(),name:$('wName').value.trim(),phone:$('wPhone').value.trim(),address:$('wAddress').value.trim(),task:$('wTask').value.trim(),ref:'',charge,paid,cost:n($('wCost').value),commission:0,udhaar:Math.max(0,charge-paid),udhaarDone:(paid<charge||$('wUdhaarDone').value==='No')?'No':'Yes',status:$('wStatus').value,date:wid?(works.find(x=>x.id===wid)?.date||today()):today(),dueDate:$('wDueDate').value,staffId:'',notes:'',updated:new Date().toISOString()};if(wid){const i=works.findIndex(w=>w.id===wid);if(i>=0){works[i]=obj}}else{works.unshift(obj)}persist();resetWorkForm();toggleWorkForm(false);showPage('work');renderWork();refresh()});
 function askStatusSMS(w){if(!w.phone)return;const msg=` ${w.name}, ${w.task}   : ${w.status} ${settings.name||'Cyber Zone'}   `;if(confirm('Work      SMS    ?'))window.location.href='sms:'+encodeURIComponent(w.phone)+'?body='+encodeURIComponent(msg)}
 function editWork(idv){const w=works.find(x=>x.id===idv);if(!w)return;showPage('work');toggleWorkForm(true);populateStaff();$('workFormTitle').textContent='Edit Work';$('workId').value=w.id;$('wName').value=w.name||'';$('wPhone').value=w.phone||'';$('wAddress').value=w.address||'';$('wTask').value=w.task;$('wCharge').value=w.charge??'';$('wPaid').value=w.paid??'';$('wCost').value=w.cost||'';if($('wUdhaarDone'))$('wUdhaarDone').value=(n(w.paid)<n(w.charge))?'No':'Yes';$('wStatus').value=w.status;$('wDate').value=w.date;$('wDueDate').value=w.dueDate||'';updatePendingRequired();if($('wStaff'))$('wStaff').value=w.staffId||'';window.scrollTo({top:0,behavior:'smooth'})}
 function markComplete(idv){const w=works.find(x=>x.id===idv);if(!w)return;if(!confirm(` ${w.name}  Work Completed  ?`))return;const old=w.status;w.status='Completed';w.updated=new Date().toISOString();persist();if(old!=='Completed')askStatusSMS(w)}
@@ -450,7 +493,7 @@ function renderCommissionSummary(){
 
 function renderWork(){const q=($('workSearch').value||'').toLowerCase(),f=$('statusFilter').value;const list=visibleWorks().filter(w=>(!f||w.status===f)&&[w.name,w.phone,w.task,w.ref].join(' ').toLowerCase().includes(q));$('workRows').innerHTML=list.map(w=>`<tr><td>${esc(w.date)}</td><td><b>${esc(w.name||'-')}</b><br><span class="muted">${esc(w.phone||'')}</span>${w.address?'<br><span class="muted">'+esc(w.address)+'</span>':''}</td><td>${esc(w.task)}${w.ref?'<br><span class="muted">'+esc(w.ref)+'</span>':''}</td><td>${ru(w.charge)}</td><td>${ru(w.paid)}</td><td>${ru(w.charge-w.paid)}</td><td>${ru(w.cost)}</td><td>${ru(w.commission||0)}</td><td>${ru(n(w.paid)-n(w.cost)-n(w.commission))}</td><td>${ru(w.udhaarDone==='Yes'?0:(w.udhaar||0))}<br>${w.udhaarDone==='Yes'?'<small>Paid</small>':`<button class="secondary mini" onclick="markUdhaarDone('${w.id}')">Receive Payment</button>`}</td><td>${badge(w.status)}</td><td><button class="secondary mini" onclick="editWork('${w.id}')">Edit</button> <button class="secondary mini" onclick="askStatusSMS(works.find(x=>x.id==='${w.id}'))">SMS</button> ${w.status!=='Completed'?`<button class="mini" style="background:#12a56a" onclick="markComplete('${w.id}')">✓ Complete</button>`:''} <button class="danger mini" onclick="deleteWork('${w.id}')">Delete</button></td></tr>`).join('')||'<tr><td colspan="12" class="empty">No work added yet. Click “Add Work”.</td></tr>'}
 function renderCustomers(){const q=($('customerSearch').value||'').toLowerCase(),map={};works.forEach(w=>{const k=w.phone||w.name;if(!map[k])map[k]={name:w.name,phone:w.phone,count:0,charge:0,paid:0,dues:[],statuses:[]};let c=map[k];c.count++;c.charge+=w.charge;c.paid+=w.paid;c.dues.push(w.charge-w.paid);c.statuses.push(w.status)});$('customerRows').innerHTML=Object.values(map).filter(c=>(c.name+' '+c.phone).toLowerCase().includes(q)).map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.phone)}</td><td>${c.count}</td><td>${ru(c.charge)}</td><td>${ru(c.paid)}</td><td>${ru(c.charge-c.paid)}</td><td>${esc([...new Set(c.statuses)].join(', '))}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">Customer data will appear when work is added.</td></tr>'}
-$('moneyForm').addEventListener('submit',e=>{e.preventDefault();money.unshift({id:id(),type:$('moneyType').value,date:$('moneyDate').value||today(),category:$('moneyCategory').value,amount:n($('moneyAmount').value),note:$('moneyNote').value.trim()});save('money',money);$('moneyForm').reset();$('moneyDate').value=today();renderMoney();refresh();requestAnimationFrame(()=>renderMoney())});
+$('moneyForm').addEventListener('submit',e=>{e.preventDefault();money.unshift({id:id(),type:$('moneyType').value,date:$('moneyDate').value||today(),category:$('moneyCategory').value,amount:n($('moneyAmount').value),note:$('moneyNote').value.trim()});save('money',money);$('moneyForm').reset();$('moneyDate').value=today();refresh()});
 function renderMoney(){$('moneyRows').innerHTML=money.map(m=>`<tr><td>${esc(m.date)}</td><td>${m.type==='expense'?'Cost':''}</td><td>${esc(m.category)}</td><td>${esc(m.note)}</td><td>${ru(m.amount)}</td><td><button class="danger mini" onclick="deleteMoney('${m.id}')">Delete</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty"> /Cost    </td></tr>'}
 function deleteMoney(idv){if(confirm('  ?')){money=money.filter(m=>m.id!==idv);persist()}}
 $('staffForm').addEventListener('submit',e=>{e.preventDefault();if(String($('sPassword').value||'').length<8){alert('Set a staff password of at least 8 characters.');return}staff.push({id:id(),name:$('sName').value.trim(),phone:$('sPhone').value.trim(),role:$('sRole').value.trim()||'Staff',date:$('sDate').value||today(),password:$('sPassword').value});save('staff',staff);$('staffForm').reset();$('sRole').value='Staff';persist()});
@@ -532,41 +575,67 @@ function renderRequests(){
  $('requestRows').innerHTML=requests.filter(r=>(!f||r.status===f)&&[r.name,r.phone,r.service,r.details].join(' ').toLowerCase().includes(q)).map(r=>`<tr><td>${esc(r.date)}</td><td><b>${esc(r.name)}</b><br>${esc(r.phone)}</td><td>${esc(r.service)}<br>${esc(r.details||'')}</td><td>${(r.files||[]).map(f=>esc(f.name)).join('<br>')||'—'}</td><td>${esc(r.status)}</td><td><button class="secondary mini" onclick="setRequestStatus('${r.id}','Approved')">Approve</button> <button class="danger mini" onclick="setRequestStatus('${r.id}','Rejected')">Reject</button> <button class="secondary mini" onclick="setRequestStatus('${r.id}','In Process')">Process</button> <button class="secondary mini" onclick="setRequestStatus('${r.id}','Completed')">Complete</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">No applications received yet.</td></tr>';
 }
 function setRequestStatus(idv,status){const r=requests.find(x=>x.id===idv);if(!r)return;r.status=status;save('requests',requests);renderRequests();alert('Request status set to '+status+'   ')}
-async function updatePublicTotalProfit(){
- // Public page receives aggregate totals only through a narrowly scoped Supabase RPC.
- // Never fetch or expose the full works/money records before login.
- const put=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+function updatePublicTotalProfit(){
  try {
-   const {data,error}=await supabaseClient.rpc('cz_public_overview');
-   if(error) throw error;
-   const result=Array.isArray(data)?(data[0]||{}):(data||{});
-   const customers=Number(result.total_customers)||0;
-   const profit=Number(result.total_profit)||0;
-   const expenses=Number(result.total_expenses)||0;
-   const udhaar=Number(result.total_udhaar)||0;
-   put('publicTotalCustomers',String(customers));put('publicTotalProfit',ru(profit));put('publicTotalExpenses',ru(expenses));put('publicTotalUdhaar',ru(udhaar));
-   const pie=document.getElementById('publicPieChart');
-   if(pie){const vals=[Math.max(0,customers),Math.max(0,profit),Math.max(0,expenses),Math.max(0,udhaar)];const total=vals.reduce((a,b)=>a+b,0);if(total>0){let at=0;const colors=['#123a63','#50c9c8','#f6b73c','#f05a28'];const stops=vals.map((v,i)=>{const a=at;at+=v/total*360;return `${colors[i]} ${a}deg ${at}deg`});pie.style.background=`conic-gradient(${stops.join(',')})`}else pie.style.background='conic-gradient(#d9e2ef 0deg 360deg)';}
-   const note=document.querySelector('#publicStatsChart > p');if(note)note.textContent='Live summary from Cyber Zone server. Personal records are not shown.';
- } catch(e) {
-   console.warn('Public online overview unavailable:',e);
-   const note=document.querySelector('#publicStatsChart > p');if(note)note.textContent='Live overview is temporarily unavailable. Please try again later.';
- }
+  const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem('cz_'+key)||'null')??fallback}catch(e){return fallback}};
+  const ws0=read('works',[]), ms0=read('money',[]);
+  const ws=Array.isArray(ws0)?ws0:[], ms=Array.isArray(ms0)?ms0:[];
+  // Count the same customer only once when both name and mobile match. Work records remain separate.
+  const customers=new Set(ws.map(w=>String(w.name||'').trim().toLowerCase()+'|'+String(w.phone||'').replace(/\D/g,''))).size;
+  const workCosts=ws.reduce((sum,w)=>sum+(Number(w.cost)||0),0);
+  const extraExpenses=ms.filter(m=>m.type==='expense').reduce((sum,m)=>sum+(Number(m.amount)||0),0);
+  const expenses=workCosts+extraExpenses;
+  // Profit uses money actually received, less work cost and commission.
+  const profit=ws.reduce((sum,w)=>sum+(Number(w.paid)||0)-(Number(w.cost)||0)-(Number(w.commission)||0),0);
+  const udhaar=ws.reduce((sum,w)=>sum+(w.udhaarDone==='Yes'?0:Math.max(0,(Number(w.charge)||0)-(Number(w.paid)||0))),0);
+  const put=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+  put('publicTotalCustomers',String(customers));put('publicTotalProfit',ru(profit));put('publicTotalExpenses',ru(expenses));put('publicTotalUdhaar',ru(udhaar));
+  const pie=document.getElementById('publicPieChart');
+  if(pie){const vals=[Math.max(0,customers),Math.max(0,profit),Math.max(0,expenses),Math.max(0,udhaar)];const total=vals.reduce((a,b)=>a+b,0);if(total>0){let at=0;const colors=['#123a63','#50c9c8','#f6b73c','#f05a28'];const stops=vals.map((v,i)=>{const a=at;at+=v/total*360;return `${colors[i]} ${a}deg ${at}deg`});pie.style.background=`conic-gradient(${stops.join(',')})`}else pie.style.background='conic-gradient(#d9e2ef 0deg 360deg)';}
+ } catch(e) { console.warn('Could not update public overview chart',e); }
 }
 updatePublicTotalProfit();
-// Refresh the public aggregate when the visitor returns to the page.
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)updatePublicTotalProfit();});
-window.addEventListener('focus',updatePublicTotalProfit);
 
-// Public reviews are stored locally on this device; no database/security settings are changed.
+// Public reviews are shared through Supabase so a rating submitted on one phone appears on every phone.
 (function(){
  let rating=0;const stars=[...document.querySelectorAll('#publicStarPicker .cz-star-btn')];
  function paint(){stars.forEach(b=>{const active=Number(b.dataset.rating)<=rating;b.classList.toggle('selected',active);b.setAttribute('aria-checked',String(Number(b.dataset.rating)===rating));});}
  stars.forEach(b=>b.addEventListener('click',()=>{rating=Number(b.dataset.rating);paint()}));
  const escapeReview=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- function renderReviews(){let arr=[];try{arr=JSON.parse(localStorage.getItem('cz_public_reviews')||'[]')}catch(e){}const box=document.getElementById('publicReviewList');if(box)box.innerHTML=arr.slice(-5).reverse().map(r=>`<div class="cz-review-item"><div class="stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)} <span style="color:#344054">${escapeReview(r.name||'Customer')}</span></div><div>${escapeReview(r.text)}</div></div>`).join('');const summary=document.getElementById('publicRatingSummary');if(summary){const count=arr.length,avg=count?arr.reduce((sum,r)=>sum+(Number(r.rating)||0),0)/count:0;summary.textContent=`⭐ ${avg.toFixed(1)} / 5 (${count} ${count===1?'rating':'ratings'})`;}}
- const form=document.getElementById('publicReviewForm');if(form)form.addEventListener('submit',e=>{e.preventDefault();const msg=document.getElementById('publicReviewMessage');const text=document.getElementById('publicReviewText').value.trim();if(!rating){msg.style.color='#b42318';msg.textContent='Please select a star rating.';return}if(!text){msg.style.color='#b42318';msg.textContent='Please write a short review.';return}let arr=[];try{arr=JSON.parse(localStorage.getItem('cz_public_reviews')||'[]')}catch(e){}arr.push({name:document.getElementById('publicReviewName').value.trim(),rating,text,createdAt:new Date().toISOString()});try{localStorage.setItem('cz_public_reviews',JSON.stringify(arr.slice(-50)));msg.style.color='#067647';msg.textContent='Thank you! Rating saved on this device.';form.reset();rating=0;paint();renderReviews()}catch(err){msg.style.color='#b42318';msg.textContent='Could not save the review on this device.'}});
- renderReviews();
+ async function renderReviews(){
+   const box=document.getElementById('publicReviewList');if(!box)return;
+   try{
+     const {data,error}=await supabaseClient.from('cz_public_reviews').select('name,rating,review,created_at').order('created_at',{ascending:false}).limit(5);
+     if(error)throw error;
+     box.innerHTML=(data||[]).map(r=>`<div class="cz-review-item"><div class="stars">${'★'.repeat(Number(r.rating)||0)}${'☆'.repeat(5-(Number(r.rating)||0))} <span style="color:#344054">${escapeReview(r.name||'Customer')}</span></div><div>${escapeReview(r.review)}</div></div>`).join('');
+   }catch(e){console.warn('Could not load shared reviews',e);box.innerHTML='<div class="cz-review-item">Reviews could not be loaded. Please try again.</div>';}
+ }
+ async function migrateOldLocalReviews(){
+   if(localStorage.getItem('cz_public_reviews_migrated_v1')==='yes')return;
+   let arr=[];try{arr=JSON.parse(localStorage.getItem('cz_public_reviews')||'[]')}catch(e){}
+   if(!Array.isArray(arr)||!arr.length){localStorage.setItem('cz_public_reviews_migrated_v1','yes');return;}
+   try{
+     const rows=arr.filter(r=>Number(r.rating)>=1&&Number(r.rating)<=5&&String(r.text||'').trim()).map(r=>({name:String(r.name||'').slice(0,60),rating:Number(r.rating),review:String(r.text).trim().slice(0,500),created_at:r.createdAt||new Date().toISOString()}));
+     if(rows.length){const {error}=await supabaseClient.from('cz_public_reviews').insert(rows);if(error)throw error;}
+     localStorage.setItem('cz_public_reviews_migrated_v1','yes');
+   }catch(e){console.warn('Old local reviews migration will retry later',e);}
+ }
+ const form=document.getElementById('publicReviewForm');if(form)form.addEventListener('submit',async e=>{
+   e.preventDefault();const msg=document.getElementById('publicReviewMessage');const text=document.getElementById('publicReviewText').value.trim();
+   if(!rating){msg.style.color='#b42318';msg.textContent='Please select a star rating.';return}
+   if(!text){msg.style.color='#b42318';msg.textContent='Please write a short review.';return}
+   const submit=form.querySelector('button[type=submit]');if(submit)submit.disabled=true;
+   try{
+     const row={name:document.getElementById('publicReviewName').value.trim().slice(0,60),rating,review:text.slice(0,500)};
+     const {error}=await supabaseClient.from('cz_public_reviews').insert(row);if(error)throw error;
+     msg.style.color='#067647';msg.textContent='Thank you! Your rating has been saved and shared.';
+     form.reset();rating=0;paint();await renderReviews();
+   }catch(err){msg.style.color='#b42318';msg.textContent='Could not sync the rating. Please try again.';console.error('Rating save failed',err);}
+   finally{if(submit)submit.disabled=false;}
+ });
+ migrateOldLocalReviews().then(renderReviews);renderReviews();
+ setInterval(renderReviews,15000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)renderReviews()});
 })();
 
 document.querySelector('.app').style.display='none';$('loginScreen').style.display='flex';$('publicServicePage').style.display='none';
@@ -655,7 +724,7 @@ supabaseClient.auth.getSession().then(async ({data,error})=>{
   document.body.classList.add('cz-authenticated');
   if($('loginScreen'))$('loginScreen').style.display='none'; if($('publicServicePage'))$('publicServicePage').style.display='none';
   const app=document.querySelector('.app');if(app){app.classList.remove('hidden');app.style.display='grid';}
-  await czCloudLoad(membership.owner_id); czShowCloudStatus('Cloud sync connected.'); applyRoleView(); refresh(); updatePublicTotalProfit();
+  await czCloudLoad(membership.owner_id); czShowCloudStatus('Cloud sync connected.'); applyRoleView(); refresh();
  } catch(e){console.error('Session restore failed',e);}
 });
 </script>
