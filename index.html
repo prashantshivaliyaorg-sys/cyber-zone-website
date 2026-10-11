@@ -28,11 +28,11 @@ main,.main,.content{min-width:0!important;width:100%!important}
 @media(max-width:560px){.app{display:block!important}.sidebar{position:relative;height:auto;overflow:visible}.nav{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}.nav button{justify-content:center!important;text-align:center!important}}
 
 /* Required/compulsory fields are clearly highlighted */
-label.required-field{color:#b42318!important;font-weight:700!important}
-.required-tag{display:inline-block;margin-left:7px;padding:2px 6px;border-radius:5px;background:#fee4e2;color:#b42318;font-size:10px;font-weight:800;letter-spacing:.3px;vertical-align:middle}
+label.required-field{color:inherit!important;font-weight:inherit!important}
+.required-tag{display:none!important}
 .field.required-field-wrap input:not([type="checkbox"]),.field.required-field-wrap select,.field.required-field-wrap textarea,
 form .required-field-wrap input:not([type="checkbox"]),form .required-field-wrap select,form .required-field-wrap textarea{
- border:2px solid #e5484d!important;background:#fffafa!important;box-shadow:0 0 0 2px #fee4e2!important
+ border:1px solid #e99a9a!important;background:#fffafa!important;box-shadow:none!important
 }
 input:focus,select:focus,textarea:focus{outline:2px solid #175cd3;outline-offset:1px}
 .required-help{font-size:12px;color:#b42318;font-weight:600;margin:0 0 12px}
@@ -56,7 +56,13 @@ body.cz-authenticated .app{display:grid!important}
 #publicRegistrationOpen::before { content:'★ '; }
 #publicRegistrationOpen::after { content:' ★'; }
 #publicRegistrationOpen:focus-visible { outline:3px solid #222; outline-offset:3px; }
-@media (prefers-reduced-motion: reduce) { #publicRegistrationOpen { animation:none !important; } }
+/* Keep Service Registration blinking continuously as requested. */
+</style>
+
+<style id="cz-login-required-fields-fix">
+.cz-login-field .cz-login-required{display:block!important;height:8px!important;min-height:8px!important;line-height:8px!important;margin:0 0 3px!important;padding:0!important;font-size:12px!important;color:#d92d20!important;font-weight:800!important;text-align:left!important}
+.cz-login-field .cz-required-star{display:inline-block!important;color:#d92d20!important;font-size:15px!important;line-height:8px!important}
+.cz-login-field input::placeholder{opacity:1;color:#667085}
 </style>
 </head>
 <body>
@@ -75,12 +81,12 @@ body.cz-authenticated .app{display:grid!important}
 
 <div id="publicServicePage" style="display:none;min-height:100vh;background:#f3f6fb;padding:18px">
  <div style="max-width:760px;margin:0 auto;background:white;border:1px solid #dce4ef;border-radius:16px;padding:22px">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><h1 style="margin:0;color:#175cd3">Cyber Zone</h1><p style="margin:5px 0 0;color:#667085">Customer Service Portal</p></div><button type="button" id="staffLoginOpen" class="secondary">Management / Staff Login</button></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><h1 style="margin:0;color:#175cd3">Cyber Zone</h1><p style="margin:5px 0 0;color:#667085">Customer Service Portal</p></div><button type="button" id="staffLoginOpen" class="secondary">Management Login</button></div>
   <h2 style="margin-top:22px">Service Registration</h2><p style="color:#667085;font-size:14px">Choose a service, enter your details, upload the required documents, and submit your request.</p>
   <form id="publicServiceForm"><div class="formgrid">
    <div class="field"><label>Customer Name *</label><input id="pName" required></div>
    <div class="field"><label>Mobile Number *</label><input id="pPhone" required inputmode="numeric" maxlength="10" pattern="[0-9]{10}"></div>
-   <div class="field"><label>Which service do you need? *</label><select id="pService" required><option value="">Select a service</option><option>Income Certificate</option><option>Caste Certificate</option><option>Residence Certificate</option><option>PAN Card</option><option>Online Form</option><option>Print / Photocopy</option><option>Other Service</option></select></div>
+   <div class="field"><label>Which service do you need? *</label><select id="pService" required><option value="">Select a service</option><option>Passport Seva</option><option>Photo Editing Master</option><option>Advertisement Design</option><option>Visiting Card Design Maker</option><option>Labour Card</option><option>e-Shram Card</option><option>Udyam Registration</option><option>PDF Maker</option><option>Airtel Payment Bank Account Open</option><option>Fino Bank Account Open</option><option>Sewa Yojan</option><option>Ayushman Card</option><option>Income Certificate</option><option>Caste Certificate</option><option>Residence Certificate</option><option>PAN Card</option><option>Online Form</option><option>Document Scan &amp; Upload</option><option>Print / Photocopy</option><option>Photo Resize &amp; Background Remove</option><option>Banner &amp; Poster Design</option><option>Resume &amp; Document Formatting</option><option>Other Service</option></select></div>
    <div class="field"><label>Work  </label><input id="pDetails"></div>
    <div class="field wide"><label>Upload Required Documents *</label><input id="pFiles" type="file" multiple required accept=".pdf,.jpg,.jpeg,.png"><small style="color:#667085">PDF, JPG, PNG; demo    2 MB </small><div id="pFileNames" style="font-size:12px;margin-top:6px"></div></div>
    <div class="field wide"><label>Additional Information</label><textarea id="pNote" rows="3"></textarea></div>
@@ -89,23 +95,87 @@ body.cz-authenticated .app{display:grid!important}
   </div><div id="pMessage" style="margin-top:12px;font-size:14px"></div></form>
   <p style="font-size:12px;color:#667085;margin-top:22px">Note: This is a demo. Applications will reach the Management Portal on other devices only after an online server and secure document storage are configured.</p>
  </div>
+ <div class="cz-login-contact" style="margin-top:14px;background:#fff;border:1px solid #dce4ef;border-radius:14px;padding:14px 16px;box-shadow:0 5px 18px #13294b0b;font-size:13px;line-height:1.6;color:#152746"><b>Cyber Zone — Contact Us</b><br><b>Address:</b> Dhakka Karam Chand, Dhampur to Nehtaur Road, Nearby Ram Raheem Medical, Uttar Pradesh - 246761<br><b>Gmail:</b> <a href="mailto:cyberzone.biz@gmail.com">cyberzone.biz@gmail.com</a><br><b>Contact:</b> <a href="tel:7505436716">7505436716</a></div>
+ </div>
 </div>
 
+<style>
+#loginScreen{overflow-x:hidden!important;overflow-y:auto!important; -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain}
+.cz-login-layout{width:min(1120px,100%);display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:22px;align-items:center;margin:auto}
+.cz-login-left{min-width:0;min-height:0}.cz-login-right{min-width:0;display:flex;flex-direction:column;gap:12px;align-self:center}.cz-login-card{position:relative;top:auto;align-self:start}.cz-login-services{max-height:calc(100dvh - 36px);overflow-y:auto}.cz-login-services{background:#fff;border:1px solid #dce4ef;border-radius:18px;padding:22px;box-shadow:0 12px 40px #13294b18}
+.cz-login-services h2{margin:0 0 6px;color:#175cd3;font-size:22px}.cz-login-services .cz-service-sub{margin:0 0 16px;color:#667085;font-size:13px}
+.cz-service-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cz-service-item{width:100%;text-align:left;display:flex;align-items:center;gap:10px;min-height:62px;padding:10px;border:1px solid #dce4ef;border-radius:12px;background:#f8faff;font-weight:800;color:#152746;animation:czServicePulse 1.35s ease-in-out infinite alternate}
+.cz-service-logo{width:38px;height:38px;flex:0 0 38px;display:flex;align-items:center;justify-content:center;line-height:1;white-space:nowrap;border-radius:10px;background:#e0ecff;font-size:23px}
+.cz-service-item:hover{background:#eaf1ff;transform:translateY(-1px)}.cz-service-item>span:last-child{display:block;min-width:0;overflow-wrap:anywhere;line-height:1.25}.cz-service-item:nth-child(2n) .cz-service-logo{background:#dcfae6}.cz-service-item:nth-child(3n) .cz-service-logo{background:#fff0d2}
+@keyframes czServicePulse{from{box-shadow:0 0 0 0 #175cd318}to{box-shadow:0 0 0 3px #175cd32b}}
+@media(max-width:760px){#loginScreen{align-items:flex-start!important;justify-content:center!important;padding:10px!important;height:100dvh;overflow-y:auto;overflow-x:hidden}.cz-login-layout{height:auto;min-height:100%;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;gap:12px;width:100%;max-width:460px;align-items:start;margin:auto}.cz-login-left{overflow:visible;grid-row:2}.cz-login-right{grid-row:1;width:100%;align-self:start}.cz-login-card{position:relative;top:auto;width:100%!important;padding:16px!important}.cz-login-card>div{width:100%!important;padding:16px!important;box-sizing:border-box}.cz-login-services{padding:16px;max-height:44dvh;height:auto;overflow-y:auto}.cz-login-services h2{font-size:19px}.cz-service-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.cz-service-item{font-size:12px;min-height:62px;padding:8px;gap:7px}.cz-service-logo{width:32px;height:32px;flex-basis:32px;font-size:19px}.cz-login-contact{overflow-wrap:anywhere;font-size:12px!important;padding:12px!important}}
+@media(min-width:761px){#loginScreen{padding:24px!important}.cz-login-right{width:100%;max-width:420px}.cz-login-card{width:100%!important;max-width:420px}.cz-login-contact{overflow-wrap:anywhere}}
+
+.cz-login-credentials{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:start;margin-bottom:12px}
+.cz-login-field{min-width:0}
+.cz-login-field input{box-sizing:border-box;font-size:14px}
+.cz-login-layout{min-height:min-content}
+@media(max-width:760px){
+ #loginScreen{height:100dvh!important;min-height:100dvh;overflow-y:auto!important;align-items:flex-start!important;justify-content:flex-start!important;padding:10px!important}
+ .cz-login-layout{min-height:min-content;height:auto;padding-bottom:16px}
+ .cz-login-card{max-height:none;overflow:visible}
+ .cz-login-credentials{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+ .cz-login-field label{font-size:12px!important}
+ .cz-login-field input{padding:10px 8px!important;font-size:12px!important}
+ .cz-login-field input::placeholder{font-size:11px}
+}
+@media(max-width:360px){.cz-login-credentials{gap:6px}.cz-login-field input{padding:9px 6px!important;font-size:11px!important}.cz-login-field input::placeholder{font-size:10px}}
+</style>
 <div id="loginScreen" style="position:fixed;inset:0;z-index:9999;background:#eef3fb;display:flex;align-items:center;justify-content:center;padding:18px">
+ <div class="cz-login-layout">
+ <div class="cz-login-left"><div class="cz-login-services"><h2>Our Services</h2><p class="cz-service-sub">Professional digital services at Cyber Zone</p><div class="cz-service-grid">
+<button type="button" class="cz-service-item" data-service="Passport Seva" aria-label="Register for Passport Seva"><span class="cz-service-logo">🪪</span><span>Passport Seva</span></button>
+<button type="button" class="cz-service-item" data-service="Photo Editing Master" aria-label="Register for Photo Editing Master"><span class="cz-service-logo">🖼️</span><span>Photo Editing Master</span></button>
+<button type="button" class="cz-service-item" data-service="Advertisement Design" aria-label="Register for Advertisement Design"><span class="cz-service-logo">📢</span><span>Advertisement Design</span></button>
+<button type="button" class="cz-service-item" data-service="Visiting Card Design Maker" aria-label="Register for Visiting Card Design Maker"><span class="cz-service-logo">💳</span><span>Visiting Card Design Maker</span></button>
+<button type="button" class="cz-service-item" data-service="Labour Card" aria-label="Register for Labour Card"><span class="cz-service-logo">👷</span><span>Labour Card</span></button>
+<button type="button" class="cz-service-item" data-service="e-Shram Card" aria-label="Register for e-Shram Card"><span class="cz-service-logo" aria-hidden="true">🪪</span><span>e-Shram Card</span></button>
+<button type="button" class="cz-service-item" data-service="Udyam Registration" aria-label="Register for Udyam Registration"><span class="cz-service-logo">🏢</span><span>Udyam Registration</span></button>
+<button type="button" class="cz-service-item" data-service="PDF Maker" aria-label="Register for PDF Maker"><span class="cz-service-logo">📑</span><span>PDF Maker</span></button>
+<button type="button" class="cz-service-item" data-service="Airtel Payment Bank Account Open" aria-label="Register for Airtel Payment Bank Account Open"><span class="cz-service-logo">🏦</span><span>Airtel Payment Bank Account Open</span></button>
+<button type="button" class="cz-service-item" data-service="Fino Bank Account Open" aria-label="Register for Fino Bank Account Open"><span class="cz-service-logo">🏦</span><span>Fino Bank Account Open</span></button>
+<button type="button" class="cz-service-item" data-service="Sewa Yojan" aria-label="Register for Sewa Yojan"><span class="cz-service-logo">💼</span><span>Sewa Yojan</span></button>
+<button type="button" class="cz-service-item" data-service="Online Forms" aria-label="Register for Online Forms"><span class="cz-service-logo">📝</span><span>Online Forms</span></button>
+<button type="button" class="cz-service-item" data-service="Document Scan & Upload" aria-label="Register for Document Scan & Upload"><span class="cz-service-logo">📄</span><span>Document Scan & Upload</span></button>
+<button type="button" class="cz-service-item" data-service="Print & Photocopy" aria-label="Register for Print & Photocopy"><span class="cz-service-logo">🖨️</span><span>Print & Photocopy</span></button>
+<button type="button" class="cz-service-item" data-service="Ayushman Card" aria-label="Register for Ayushman Card"><span class="cz-service-logo">🪪</span><span>Ayushman Card</span></button>
+<button type="button" class="cz-service-item" data-service="PAN Card Services" aria-label="Register for PAN Card Services"><span class="cz-service-logo">💳</span><span>PAN Card Services</span></button>
+<button type="button" class="cz-service-item" data-service="Income / Caste / Residence Certificate" aria-label="Register for Income / Caste / Residence Certificate"><span class="cz-service-logo">📋</span><span>Income / Caste / Residence Certificate</span></button>
+<button type="button" class="cz-service-item" data-service="Photo Resize & Background Remove" aria-label="Register for Photo Resize & Background Remove"><span class="cz-service-logo">📸</span><span>Photo Resize & Background Remove</span></button>
+<button type="button" class="cz-service-item" data-service="Online Application Services" aria-label="Register for Online Application Services"><span class="cz-service-logo">🌐</span><span>Online Application Services</span></button>
+<button type="button" class="cz-service-item" data-service="Resume & Document Formatting" aria-label="Register for Resume & Document Formatting"><span class="cz-service-logo">🧾</span><span>Resume & Document Formatting</span></button>
+<button type="button" class="cz-service-item" data-service="Banner & Poster Design" aria-label="Register for Banner & Poster Design"><span class="cz-service-logo">📢</span><span>Banner & Poster Design</span></button>
+</div></div>
+
+ </div>
+ <div class="cz-login-right">
+ <div class="cz-login-card" style="background:white;width:min(100%,420px);border:1px solid #dce4ef;border-radius:18px;padding:24px;box-shadow:0 12px 40px #13294b18">
  <div style="background:white;width:min(100%,420px);border:1px solid #dce4ef;border-radius:18px;padding:24px;box-shadow:0 12px 40px #13294b18">
   <button type="button" id="publicRegistrationOpen" style="width:100%;padding:12px;margin-bottom:18px;border:0;border-radius:9px;background:#087f5b;color:white;font-weight:700;cursor:pointer">NEW SERVICE REGISTRATION</button>
   <h2 style="margin:0 0 5px;color:#152746">Cyber Zone Login</h2>
-  <p style="color:#667085;margin:0 0 18px;font-size:14px">Select Management or Staff and enter your own ID and password.</p>
-  <label style="display:block;font-size:13px;margin-bottom:6px">Login Role</label>
-  <select id="loginRole" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px"><option value="Management">Management</option><option value="Staff">Staff</option></select>
-  <label style="display:block;font-size:13px;margin-bottom:6px">User ID / Mobile Number</label>
-  <input id="loginId" autocomplete="off" placeholder="Enter your Management/Staff email" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px">
-  <label style="display:block;font-size:13px;margin-bottom:6px">Password</label>
-  <input id="loginPassword" type="password" autocomplete="new-password" placeholder="Enter your password" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px">
+  <p style="color:#667085;margin:0 0 18px;font-size:14px">Only Management can log in using the Management ID and password.</p>
+  <div class="cz-login-credentials">
+   <div class="cz-login-field"><label for="loginId" class="cz-login-required" aria-label="User ID required"><span class="cz-required-star">*</span></label>
+   <input id="loginId" autocomplete="off" placeholder="User ID" required aria-label="User ID" style="width:100%;min-width:0;padding:11px;border:1px solid #ccd5e2;border-radius:8px"></div>
+   <div class="cz-login-field"><label for="loginPassword" class="cz-login-required" aria-label="Password required"><span class="cz-required-star">*</span></label>
+   <div style="display:flex;gap:6px;align-items:stretch;min-width:0">
+    <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Password" required aria-label="Password" style="flex:1;min-width:0;width:0;padding:11px;border:1px solid #ccd5e2;border-radius:8px">
+    <button type="button" id="toggleLoginPassword" aria-label="Show password" title="Show password" class="secondary" style="padding:0 10px;min-width:42px;border:1px solid #ccd5e2;border-radius:8px">👁</button>
+   </div></div>
+  </div>
   <button type="button" id="loginBtn" style="width:100%;padding:12px;border:0;border-radius:8px;background:#175cd3;color:white;font-weight:700">Login </button>
   <button type="button" id="forgotPasswordOpen" class="secondary" style="width:100%;margin-top:12px">Forgot Password?</button>
   <div id="forgotBox" style="display:none;margin-top:14px;padding:12px;border:1px solid #dce4ef;border-radius:10px"><b>Reset Password</b><p style="font-size:12px;color:#667085">Demo recovery uses the registered mobile number and recovery code. For a real public website, server-side OTP verification is required.</p><label style="display:block;font-size:13px;margin:8px 0 4px">Registered Mobile Number</label><input id="resetPhone" inputmode="numeric" maxlength="10" placeholder="7818942933" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px"><label style="display:block;font-size:13px;margin:8px 0 4px">Recovery Code</label><input id="resetCode" placeholder="Enter recovery code" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px"><label style="display:block;font-size:13px;margin:8px 0 4px">New Password</label><input id="resetNewPassword" type="password" minlength="8" placeholder="At least 8 characters" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px"><button type="button" id="resetPasswordBtn" style="width:100%;margin-top:10px">New Password  </button><div id="resetMessage" style="font-size:13px;margin-top:8px"></div></div>
   <div id="loginError" style="color:#b42318;font-size:13px;margin-top:12px"></div>
+ </div>
+<div class="cz-login-contact" style="margin-top:0;background:#fff;border:1px solid #dce4ef;border-radius:14px;padding:14px 16px;box-shadow:0 5px 18px #13294b0b;font-size:13px;line-height:1.6;color:#152746;overflow-wrap:anywhere"><b>Cyber Zone — Contact Us</b><br><b>Address:</b> Dhakka Karam Chand, Dhampur to Nehtaur Road, Nearby Ram Raheem Medical, Uttar Pradesh - 246761<br><b>Gmail:</b> <a href="mailto:cyberzone.biz@gmail.com">cyberzone.biz@gmail.com</a><br><b>Contact:</b> <a href="tel:7505436716">7505436716</a></div>
+ </div>
  </div>
 </div>
 
@@ -118,11 +188,10 @@ body.cz-authenticated .app{display:grid!important}
     <button data-page="work">▤ Daily Work</button>
     <button data-page="customers">♙ Customers</button>
     <button data-page="expenses">₹ Income & Expenses</button>
-    <button data-page="staff">♧ Staff Management</button>
     <button data-page="reports">▥ Reports</button>
     <button data-page="settings">⚙ Settings & Backup</button>
   </nav>
-  <div class="side-note">Cloud sync enabled · Keep regular backups of your Cyber Zone data.</div>
+  <div class="side-note">Cloud Sync enabled · Download backups regularly. Database backups must be configured separately.</div>
 </aside>
 <main>
   
@@ -130,7 +199,7 @@ body.cz-authenticated .app{display:grid!important}
     <div><h1 id="pageTitle">Dashboard</h1><div class="sub" id="todayLabel"></div></div>
     <div class="top-actions"><button class="secondary" onclick="logoutDemo()">Logout</button><button class="secondary" onclick="exportPDF()">Download PDF</button><button onclick="showPage('work');openWorkForm()">+ Add New Work</button></div>
   </div>
-  <div class="notice">Cloud sync status will appear here after Management or Staff signs in. Keep a separate backup regularly.</div>
+  <div class="notice">⚠️ <b>Important:</b> Starter version: data is saved in this browser on this device. Shared data across devices, secure login and automated SMS require an online backend/database and SMS gateway.</div>
 
   <section id="page-dashboard">
     <div id="staffPersonalSummary" class="cards" style="display:none;margin-bottom:16px"><div class="card"><div class="metric-label">Your Total Work</div><div class="metric" id="staffWorkCount">0</div></div><div class="card"><div class="metric-label">Your Commission</div><div class="metric" id="staffCommission">₹0</div></div><div class="card"><div class="metric-label">Your Net Profit</div><div class="metric" id="staffProfit">₹0</div></div></div>
@@ -208,7 +277,7 @@ body.cz-authenticated .app{display:grid!important}
   <section id="page-reports" class="hidden"><div class="panel"><div class="panel-head"><h2></h2><button class="secondary" onclick="exportPDF()">Download PDF</button></div><div class="report-grid"><div class="report-box">Total Work<b id="rWorks">0</b></div><div class="report-box"> Charge<b id="rCharges">₹0</b></div><div class="report-box"> Amount Received<b id="rPaid">₹0</b></div><div class="report-box"> <b id="rDue">₹0</b></div><div class="report-box">  Cost<b id="rExpenses">₹0</b></div><div class="report-box">Completed<b id="rComplete">0</b></div></div></div></section>
 
   <section id="page-settings" class="hidden"><div class="panel"><div class="panel-head"><h2>Settings & Backup</h2></div><div class="field"><label>  Name</label><input id="centerName" value="Cyber Zone"></div><div class="field"><label>  (SMS  )</label><input id="centerPhone" placeholder="   Mobile Number"></div><button onclick="saveSettings()">  </button> <button class="secondary" onclick="downloadBackup()"> Backup  </button><div style="margin-top:18px"><label>Backup      (JSON)</label><input type="file" id="backupFile" accept=".json,application/json"><button class="secondary" style="margin-top:8px" onclick="restoreBackup()">Backup Restore </button></div><hr style="border:0;border-top:1px solid var(--line);margin:20px 0"><div class="notice">     :  HTML  hosting       database,  login, scheduled SMS, delivery reports  automatic pending reminders  backend/API configuration     </div><button class="danger" onclick="clearAll()">   </button></div></section>
-  <footer class="muted" style="font-size:12px;padding:10px 2px">Cyber Zone Management · Starter website ·   Backup </footer>
+  <footer class="muted" style="font-size:12px;padding:10px 2px">Cyber Zone Management · Cloud Sync · Download backups regularly</footer>
 </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -217,36 +286,67 @@ body.cz-authenticated .app{display:grid!important}
 const SUPABASE_URL = "https://knojmxcyjfnizznpcetf.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_tyTLamKh8j7d2Vnu7swzbw_EyhkgugN";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-const CZ_MANAGEMENT_UID = "6e40f787-13a7-46a3-92b4-73bf221f8189";
+const CZ_MANAGEMENT_UID = "b47958d7-7615-4962-acbd-f3ae26b64acf";
 let czCloudReady = false;
 const CZ_STATE_KEYS = ["works", "money", "staff", "settings", "requests"];
 const $=id=>document.getElementById(id);
 
 
-// Supabase Authentication. Each account must be provisioned in Supabase Auth and assigned a row in public.cz_org_members.
+// Password visibility toggle and clearer role-specific login hints.
+$('toggleLoginPassword')?.addEventListener('click',()=>{
+ const input=$('loginPassword'),button=$('toggleLoginPassword'); if(!input||!button)return;
+ const show=input.type==='password'; input.type=show?'text':'password';
+ button.textContent=show?'🙈':'👁'; button.setAttribute('aria-label',show?'Hide password':'Show password'); button.title=show?'Hide password':'Show password';
+});
+// Supabase Authentication. Only the Management account is allowed to log in.
 $('loginBtn').addEventListener('click', async ()=>{
- const email=String($('loginId')?.value||'').trim().toLowerCase();
+ const loginId=String($('loginId')?.value||'').trim().toLowerCase();
  const password=String($('loginPassword')?.value||'');
- const selectedRole=String($('loginRole')?.value||'Management');
+ // Management alias: czadmin maps to the registered Management email.
+ const email = loginId.includes('@') ? loginId : (loginId==='czadmin' ? 'cyberzone.biz@gmail.com' : '');
  const err=$('loginError'); if(err)err.textContent='';
- if(!email||!password){if(err)err.textContent='Please enter your email and password.';return;}
+ if(!loginId||!password){if(err)err.textContent='Please enter your User ID/email and password.';return;}
+ if(!email){if(err)err.textContent='Invalid User ID. Use czadmin or the registered Management email.';return;}
  if(err)err.textContent='Connecting securely…';
  try {
    const {data:authData,error:authError}=await supabaseClient.auth.signInWithPassword({email,password});
    if(authError) throw authError;
    const user=authData.user;
+   // Only the configured Management Auth UID is permitted.
+   if(user.id !== CZ_MANAGEMENT_UID){await supabaseClient.auth.signOut();throw new Error('Access denied. Only the Management account can log in.');}
+   let ownerId=CZ_MANAGEMENT_UID;
+   // Membership lookup is optional only for this exact Management UID; RLS can hide the row.
    const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members').select('role,owner_id,active').eq('user_id',user.id).maybeSingle();
-   if(memberError) throw memberError;
-   if(!membership || membership.active===false) { await supabaseClient.auth.signOut(); throw new Error('This account has not been enabled by Management.'); }
-   const actualRole=membership.role==='management'?'Management':'Staff';
-   if(actualRole!==selectedRole){await supabaseClient.auth.signOut();throw new Error('Please choose the correct login type: '+actualRole+'.');}
-   localStorage.setItem('cz_logged_role',actualRole); localStorage.setItem('cz_logged_user',user.email||email);
+   if(!memberError && membership){
+     if(membership.active===false || membership.role!=='management'){await supabaseClient.auth.signOut();throw new Error('Management account is disabled. Check the Management membership settings.');}
+     ownerId=membership.owner_id||CZ_MANAGEMENT_UID;
+   }
+   const actualRole='Management';
+   localStorage.setItem('cz_logged_role',actualRole); localStorage.setItem('cz_logged_user',user.email||email); localStorage.setItem('cz_login_alias',loginId);
+   // Show the dashboard only after authentication succeeds. Cloud-sync failure must not leave a blank white screen.
+   try {
+     await czCloudLoad(ownerId);
+     czShowCloudStatus('Cloud sync connected.');
+   } catch(cloudError) {
+     console.error('Cloud load failed after login:', cloudError);
+     czCloudReady=false;
+     czShowCloudStatus('Logged in, but cloud sync failed: '+String(cloudError?.message||cloudError)+'. Local browser data is shown; check Supabase table permissions.', true);
+   }
    document.body.classList.add('cz-authenticated');
    const gate=$('loginScreen'),pub=$('publicServicePage'),app=document.querySelector('.app');
    if(gate)gate.style.display='none'; if(pub)pub.style.display='none'; if(app){app.classList.remove('hidden');app.style.display='grid';}
-   await czCloudLoad(membership.owner_id);
    applyRoleView(); refresh(); if(err)err.textContent='';
- } catch(e) { if(err)err.textContent='Login failed: '+(e.message||'Please check your email, password, and Management access setup.'); }
+ } catch(e) {
+   // Keep the login screen visible for authentication/authorization errors.
+   document.body.classList.remove('cz-authenticated');
+   if($('loginScreen'))$('loginScreen').style.display='flex';
+   if($('publicServicePage'))$('publicServicePage').style.display='none';
+   const app=document.querySelector('.app'); if(app)app.style.display='none';
+   if(err){
+     const detail=String(e?.message||'');
+     err.textContent='Login failed: '+(detail||'Check the account email and password.');
+   }
+ }
 });
 $('forgotPasswordOpen').addEventListener('click',()=>{
  const box=$('forgotBox');if(box)box.style.display=box.style.display==='none'?'block':'none';
@@ -254,7 +354,16 @@ $('forgotPasswordOpen').addEventListener('click',()=>{
 $('resetPasswordBtn').addEventListener('click',()=>{
  const msg=$('resetMessage'); if(msg){msg.style.color='#b42318';msg.textContent='Password recovery is handled by Supabase Auth. Use the registered email and the secure password-reset flow configured by Management.';}
 });
+$('staffLoginOpen')?.addEventListener('click',()=>{$('publicServicePage').style.display='none';$('loginScreen').style.display='flex';});
 $('publicRegistrationOpen').addEventListener('click',()=>{document.body.classList.remove('cz-authenticated');const app=document.querySelector('.app');if(app)app.style.display='none';$('loginScreen').style.display='none';$('publicServicePage').style.display='block';});
+// Every service tile opens the New Service Registration form with that service selected.
+document.querySelectorAll('.cz-service-item[data-service]').forEach(tile=>tile.addEventListener('click',()=>{
+ const service=tile.dataset.service; const select=$('pService');
+ document.body.classList.remove('cz-authenticated'); const app=document.querySelector('.app'); if(app)app.style.display='none';
+ $('loginScreen').style.display='none'; $('publicServicePage').style.display='block';
+ if(select){let option=[...select.options].find(o=>o.text.trim().toLowerCase()===service.trim().toLowerCase()); if(!option){option=document.createElement('option');option.textContent=service;select.appendChild(option);} select.value=option.value || option.text;}
+ $('publicServicePage').scrollIntoView({behavior:'smooth',block:'start'});
+}));
 // Demo-only OTP login. Replace with server-verified SMS OTP before production use.
 let demoOtp = '';
 function sendDemoOTP(){
@@ -274,7 +383,7 @@ const load=(k,d)=>{try{return JSON.parse(localStorage.getItem('cz_'+k))??d}catch
 const save=(k,v)=>{
   localStorage.setItem('cz_'+k,JSON.stringify(v));
   if(czCloudReady && CZ_STATE_KEYS.includes(k)) {
-    czCloudSave(k,v).then(()=>czShowCloudStatus('Cloud sync saved: '+k))
+    czCloudSave(k,v).then(()=>czShowCloudStatus('Online backup updated.'))
       .catch(e=>{console.error('Cloud save failed',e);czShowCloudStatus('Cloud save failed: '+(e?.message||e),true);});
   }
 };
@@ -284,44 +393,38 @@ function czShowCloudStatus(message,isError=false){
   el.textContent=message;el.style.background=isError?'#fff1f0':'#ecfdf3';el.style.color=isError?'#b42318':'#067647';
 }
 let works=load('works',[]), money=load('money',[]), staff=load('staff',[]), settings=load('settings',{name:'Cyber Zone',phone:''}), requests=load('requests',[]);
-function czHasUsefulData(key,value){
-  if(key==='settings') return !!(value && typeof value==='object' && (String(value.name||'').trim() && String(value.name).trim()!=='Cyber Zone' || String(value.phone||'').trim()));
-  return Array.isArray(value) ? value.length>0 : !!(value && typeof value==='object' && Object.keys(value).length>0);
-}
 async function czCloudLoad(ownerId){
  const {data,error}=await supabaseClient.from('cz_app_state').select('state_key,state_json').eq('owner_id',ownerId);
  if(error) throw error;
  const rows=data||[];
- const cloudMap=new Map(rows.filter(r=>CZ_STATE_KEYS.includes(r.state_key)).map(r=>[r.state_key,r.state_json]));
- const defaults={works:[],money:[],staff:[],settings:{name:'Cyber Zone',phone:''},requests:[]};
- // Never overwrite useful browser data with an empty cloud value. Upload local data when cloud is empty.
- czCloudReady=false;
- const toUpload=[];
- for(const key of CZ_STATE_KEYS){
-   const localValue=load(key,defaults[key]);
-   const hasCloud=cloudMap.has(key);
-   const cloudValue=cloudMap.get(key);
-   if(!hasCloud || (!czHasUsefulData(key,cloudValue) && czHasUsefulData(key,localValue))){
-     localStorage.setItem('cz_'+key,JSON.stringify(localValue));
-     toUpload.push([key,localValue]);
-   } else {
-     localStorage.setItem('cz_'+key,JSON.stringify(cloudValue));
-   }
+ // First-login migration: if this organization has no cloud state yet, upload the current browser's saved data.
+ if(rows.length===0){
+   const localState={works:load('works',[]),money:load('money',[]),staff:load('staff',[]),settings:load('settings',{name:'Cyber Zone',phone:''}),requests:load('requests',[])};
+   czCloudReady=true;
+   for(const key of CZ_STATE_KEYS){await czCloudSave(key,localState[key]);}
+ } else {
+   for(const row of rows){if(CZ_STATE_KEYS.includes(row.state_key)){localStorage.setItem('cz_'+row.state_key,JSON.stringify(row.state_json));}}
+   // Fill any state keys not yet present in the cloud from this browser's saved values.
+   const cloudKeys=new Set(rows.map(row=>row.state_key));
+   czCloudReady=true;
+   for(const key of CZ_STATE_KEYS){if(!cloudKeys.has(key)){await czCloudSave(key,load(key,key==='settings'?{name:'Cyber Zone',phone:''}:[]));}}
  }
- works=load('works',[]); money=load('money',[]); staff=load('staff',[]); settings=load('settings',defaults.settings); requests=load('requests',[]);
- czCloudReady=true;
- for(const [key,value] of toUpload) await czCloudSave(key,value);
- czShowCloudStatus('Cloud sync connected. Data is saved to Supabase when changes are made.');
+ works=load('works',[]); money=load('money',[]); staff=load('staff',[]); settings=load('settings',{name:'Cyber Zone',phone:''}); requests=load('requests',[]);
 }
 async function czCloudSave(key,value){
  const {data:authData,error:authError}=await supabaseClient.auth.getUser();
  if(authError) throw authError;
  if(!authData?.user) throw new Error('Not signed in to Supabase; cloud sync was not performed.');
- const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members')
-  .select('owner_id,active').eq('user_id',authData.user.id).maybeSingle();
- if(memberError) throw new Error('Could not read organization membership: '+memberError.message);
- if(!membership||membership.active===false) throw new Error('No active organization membership');
- const row={owner_id:membership.owner_id,state_key:key,state_json:value,updated_at:new Date().toISOString()};
+ let ownerId=null;
+ if(authData.user.id===CZ_MANAGEMENT_UID){
+   ownerId=CZ_MANAGEMENT_UID;
+   const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members').select('owner_id,active,role').eq('user_id',authData.user.id).maybeSingle();
+   if(!memberError && membership){
+     if(membership.active===false || membership.role!=='management') throw new Error('Management account is disabled');
+     ownerId=membership.owner_id||CZ_MANAGEMENT_UID;
+   }
+ } else { throw new Error('Only the Management account can sync data.'); }
+ const row={owner_id:ownerId,state_key:key,state_json:value,updated_at:new Date().toISOString()};
  const {error:upsertError}=await supabaseClient.from('cz_app_state').upsert(row,{onConflict:'owner_id,state_key'});
  if(!upsertError) return;
  const {data:existing,error:selectError}=await supabaseClient.from('cz_app_state')
@@ -356,7 +459,14 @@ function askStatusSMS(w){if(!w.phone)return;const msg=` ${w.name}, ${w.task}   :
 function editWork(idv){const w=works.find(x=>x.id===idv);if(!w)return;showPage('work');toggleWorkForm(true);populateStaff();$('workFormTitle').textContent='Edit Work';$('workId').value=w.id;$('wName').value=w.name;$('wPhone').value=w.phone;$('wTask').value=w.task;$('wRef').value=w.ref||'';$('wCharge').value=w.charge;$('wPaid').value=w.paid;$('wCost').value=w.cost;$('wCommission').value=w.commission||0;if($('wUdhaar'))$('wUdhaar').value=w.udhaar||0;if($('wUdhaarDone'))$('wUdhaarDone').value=w.udhaarDone||'No';$('wStatus').value=w.status;$('wDate').value=w.date;$('wDueDate').value=w.dueDate||'';$('wStaff').value=w.staffId||'';$('wNotes').value=w.notes||'';window.scrollTo({top:0,behavior:'smooth'})}
 function markComplete(idv){const w=works.find(x=>x.id===idv);if(!w)return;if(!confirm(` ${w.name}  Work Completed  ?`))return;const old=w.status;w.status='Completed';w.updated=new Date().toISOString();persist();if(old!=='Completed')askStatusSMS(w)}
 function markUdhaarDone(idv){const w=works.find(x=>x.id===idv);if(!w)return;if(confirm(' Customer  /Balance       ?')){w.udhaarDone='Yes';w.udhaarPaidDate=today();persist()}}
-function deleteWork(idv){if(confirm('  Work    ?')){works=works.filter(w=>w.id!==idv);persist()}}
+function czIsManagement(){return String(localStorage.getItem('cz_logged_role')||'').trim().toLowerCase()==='management';}
+function czConfirmDelete(label){
+  if(!czIsManagement()){alert('Only Management can delete records.');return false;}
+  if(!confirm('Management approval required. Delete '+label+'? This action will sync to all devices.')) return false;
+  const typed=prompt('Type DELETE to confirm. A database backup must be configured separately for recovery.');
+  return typed==='DELETE';
+}
+function deleteWork(idv){if(czConfirmDelete('this work record')){works=works.filter(w=>w.id!==idv);persist()}}
 
 function renderCommissionSummary(){
  const month=today().slice(0,7), current=visibleWorks().filter(w=>String(w.date||'').slice(0,7)===month);
@@ -371,10 +481,10 @@ function renderWork(){renderCommissionSummary();const q=($('workSearch').value||
 function renderCustomers(){const q=($('customerSearch').value||'').toLowerCase(),map={};works.forEach(w=>{const k=w.phone||w.name;if(!map[k])map[k]={name:w.name,phone:w.phone,count:0,charge:0,paid:0,dues:[],statuses:[]};let c=map[k];c.count++;c.charge+=w.charge;c.paid+=w.paid;c.dues.push(w.charge-w.paid);c.statuses.push(w.status)});$('customerRows').innerHTML=Object.values(map).filter(c=>(c.name+' '+c.phone).toLowerCase().includes(q)).map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.phone)}</td><td>${c.count}</td><td>${ru(c.charge)}</td><td>${ru(c.paid)}</td><td>${ru(c.charge-c.paid)}</td><td>${esc([...new Set(c.statuses)].join(', '))}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">Customer data will appear when work is added.</td></tr>'}
 $('moneyForm').addEventListener('submit',e=>{e.preventDefault();money.unshift({id:id(),type:$('moneyType').value,date:$('moneyDate').value||today(),category:$('moneyCategory').value,amount:n($('moneyAmount').value),note:$('moneyNote').value.trim()});save('money',money);$('moneyForm').reset();$('moneyDate').value=today();refresh()});
 function renderMoney(){$('moneyRows').innerHTML=money.map(m=>`<tr><td>${esc(m.date)}</td><td>${m.type==='expense'?'Cost':''}</td><td>${esc(m.category)}</td><td>${esc(m.note)}</td><td>${ru(m.amount)}</td><td><button class="danger mini" onclick="deleteMoney('${m.id}')">Delete</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty"> /Cost    </td></tr>'}
-function deleteMoney(idv){if(confirm('  ?')){money=money.filter(m=>m.id!==idv);persist()}}
+function deleteMoney(idv){if(czConfirmDelete('this money record')){money=money.filter(m=>m.id!==idv);persist()}}
 $('staffForm').addEventListener('submit',e=>{e.preventDefault();if(String($('sPassword').value||'').length<8){alert('Set a staff password of at least 8 characters.');return}staff.push({id:id(),name:$('sName').value.trim(),phone:$('sPhone').value.trim(),role:$('sRole').value.trim()||'Staff',date:$('sDate').value||today(),password:$('sPassword').value});save('staff',staff);$('staffForm').reset();$('sRole').value='Staff';persist()});
 function renderStaff(){populateStaff();$('staffRows').innerHTML=staff.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.phone)}</td><td>${esc(s.role)}</td><td>${esc(s.date)}</td><td><button class="danger mini" onclick="deleteStaff('${s.id}')">Delete</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">No staff added yet.</td></tr>'}
-function deleteStaff(idv){if(String(localStorage.getItem('cz_logged_role')||'').toLowerCase()==='staff'){alert('Only Management can delete staff.');return;}if(confirm('Delete this staff member?')){staff=staff.filter(s=>s.id!==idv);persist()}}
+function deleteStaff(idv){if(czConfirmDelete('this staff member')){staff=staff.filter(s=>s.id!==idv);persist()}}
 function refresh(){const all=works,ws=visibleWorks(),d=today(),todayWorks=ws.filter(w=>w.date===d),todayPaid=todayWorks.reduce((a,w)=>a+n(w.paid),0),todayCost=todayWorks.reduce((a,w)=>a+n(w.cost),0),due=ws.reduce((a,w)=>a+n(w.charge)-n(w.paid),0);$('mToday').textContent=todayWorks.length;$('mPending').textContent=ws.filter(w=>w.status==='Pending').length;$('mProcessing').textContent=ws.filter(w=>w.status==='Processing').length;$('mCompleted').textContent=ws.filter(w=>w.status==='Completed').length;$('mIncome').textContent=ru(todayPaid);$('mExpense').textContent=ru(todayCost);$('mDue').textContent=ru(due);$('mCustomers').textContent=new Set(ws.map(w=>w.phone||w.name)).size;$('sumFees').textContent=ru(todayWorks.reduce((a,w)=>a+n(w.charge),0));$('sumPaid').textContent=ru(todayPaid);$('sumNet').textContent=ru(todayWorks.reduce((a,w)=>a+n(w.charge)-n(w.cost)-n(w.commission),0));$('recentRows').innerHTML=ws.slice(0,6).map(w=>`<tr><td>${esc(w.name||'-')}</td><td>${esc(w.task||'')}</td><td>${badge(w.status)}</td><td>${ru(n(w.charge)-n(w.paid))}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">No work recorded yet.</td></tr>';$('rWorks').textContent=ws.length;$('rCharges').textContent=ru(ws.reduce((a,w)=>a+n(w.charge),0));$('rPaid').textContent=ru(ws.reduce((a,w)=>a+n(w.paid),0));$('rDue').textContent=ru(due);$('rExpenses').textContent=ru(ws.reduce((a,w)=>a+n(w.cost),0));$('rComplete').textContent=ws.filter(w=>w.status==='Completed').length;renderWork();if(localStorage.getItem('cz_logged_role')!=='Staff'){renderCustomers();renderMoney();renderStaff();}}
 function downloadBackup(){
   try {
@@ -436,6 +546,19 @@ function restoreBackup(){
   reader.onerror=()=>alert('Could not read the selected backup file.');
   reader.readAsText(file);
 }
+
+// Destructive reset is Management-only and requires a typed phrase.
+// Configure the Supabase database backup trigger before relying on recoverability.
+function clearAll(){
+  if(!czIsManagement()){alert('Only Management can clear data.');return;}
+  if(!confirm('WARNING: This will clear all Cyber Zone records and sync the empty state to the cloud. Continue only if a current backup exists.')) return;
+  const typed=prompt('Type CLEAR ALL DATA to confirm this destructive action.');
+  if(typed!=='CLEAR ALL DATA'){alert('Cancelled. No data was changed.');return;}
+  works=[]; money=[]; staff=[]; requests=[];
+  persist();
+  alert('Data cleared. If database backup protection is configured, previous cloud versions may be recoverable. Download a backup before any reset in future.');
+}
+
 function saveSettings(){settings.name=$('centerName').value.trim()||'Cyber Zone';settings.phone=$('centerPhone').value.trim();persist();alert('Settings saved.')}
 function exportPDF(){
   const rows=[['Date','Customer','Phone','Task','Reference','Charge','Paid','Due','Cost','Outstanding','Outstanding Paid','Status','Staff','Due Date','Notes'],...works.map(w=>[w.date,w.name,w.phone,w.task,w.ref,w.charge,w.paid,Number(w.charge||0)-Number(w.paid||0),w.cost,w.udhaar||0,w.udhaarDone||'No',w.status,(staff.find(x=>String(x.id)===String(w.staffId))||{}).name||w.staff||'',w.dueDate||'',w.notes||''])];
@@ -477,19 +600,24 @@ $('centerName').value=settings.name||'Cyber Zone';$('centerPhone').value=setting
 })();
 </script>
 <script>
-// Make all compulsory fields visually obvious without changing the form's existing validation.
-(function markCompulsoryFields(){
+// Required-field styling: red outline and a small red star only; never show COMPULSORY text.
+(function markRequiredWithStarOnly(){
  const mark = () => {
-  document.querySelectorAll('label').forEach(label => {
-   const text=(label.textContent||'').trim();
+  document.querySelectorAll('.required-tag,.required-help').forEach(el=>el.remove());
+  document.querySelectorAll('#publicServicePage label, .cz-login-field label').forEach(label=>{
    const linked = label.htmlFor ? document.getElementById(label.htmlFor) : label.querySelector('input,select,textarea');
-   const isRequired = /\*/.test(text) || /\(required\)/i.test(text) || !!(linked && linked.required) || /User ID \/ Mobile Number|^Password$|Staff Password/i.test(text);
+   const text=(label.textContent||'').trim();
+   const isRequired = /\*/.test(text) || !!(linked && linked.required);
    if(!isRequired) return;
    label.classList.add('required-field');
-   if(!label.querySelector('.required-tag')) { const tag=document.createElement('span'); tag.className='required-tag'; tag.textContent='COMPULSORY'; label.appendChild(tag); }
-   const field=label.closest('.field') || label.parentElement;
+   if(!label.querySelector('.cz-required-star') && !/\*/.test(text)){
+    const star=document.createElement('span'); star.className='cz-required-star'; star.textContent=' *'; label.appendChild(star);
+   }
+   const field=label.closest('.field') || label.closest('.cz-login-field') || label.parentElement;
    if(field) field.classList.add('required-field-wrap');
-   if(linked && linked.type!=='checkbox') { linked.style.border='2px solid #e5484d'; linked.style.backgroundColor='#fffafa'; linked.setAttribute('aria-required','true'); }
+   if(linked && linked.type!=='checkbox'){
+    linked.style.border='1px solid #e99a9a'; linked.style.backgroundColor='#fffafa'; linked.setAttribute('aria-required','true');
+   }
   });
  };
  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mark); else mark();
@@ -523,14 +651,18 @@ document.addEventListener('DOMContentLoaded',function(){
 supabaseClient.auth.getSession().then(async ({data,error})=>{
  if(error||!data?.session?.user) return;
  try {
-  const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members').select('role,owner_id,active').eq('user_id',data.session.user.id).maybeSingle();
-  if(memberError||!membership||membership.active===false) return;
-  const role=membership.role==='management'?'Management':'Staff';
-  localStorage.setItem('cz_logged_role',role); localStorage.setItem('cz_logged_user',data.session.user.email||'');
+  const user=data.session.user;
+  if(user.id!==CZ_MANAGEMENT_UID){await supabaseClient.auth.signOut();return;}
+  let ownerId=CZ_MANAGEMENT_UID;
+  const {data:membership,error:memberError}=await supabaseClient.from('cz_org_members').select('role,owner_id,active').eq('user_id',user.id).maybeSingle();
+  if(!memberError && membership){if(membership.active===false || membership.role!=='management'){await supabaseClient.auth.signOut();return;} ownerId=membership.owner_id||CZ_MANAGEMENT_UID;}
+  localStorage.setItem('cz_logged_role','Management'); localStorage.setItem('cz_logged_user',user.email||'');
+  try { await czCloudLoad(ownerId); czShowCloudStatus('Cloud sync connected.'); }
+  catch(cloudError){ console.error('Cloud load failed during session restore:',cloudError); czCloudReady=false; czShowCloudStatus('Signed in, but cloud sync failed: '+String(cloudError?.message||cloudError)+'. Local browser data is shown.',true); }
   document.body.classList.add('cz-authenticated');
   if($('loginScreen'))$('loginScreen').style.display='none'; if($('publicServicePage'))$('publicServicePage').style.display='none';
   const app=document.querySelector('.app');if(app){app.classList.remove('hidden');app.style.display='grid';}
-  await czCloudLoad(membership.owner_id); czShowCloudStatus('Cloud sync connected.'); applyRoleView(); refresh();
+  applyRoleView(); refresh();
  } catch(e){console.error('Session restore failed',e);}
 });
 </script>
