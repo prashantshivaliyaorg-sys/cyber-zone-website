@@ -409,7 +409,7 @@ async function czCloudSave(key,value){
   if(insertError) throw new Error('Cloud insert failed: '+insertError.message+' (upsert issue: '+upsertError.message+').');
  }
 }
-function persist(){save('works',works);save('money',money);save('staff',staff);save('settings',settings);save('requests',requests);refresh();if(typeof updatePublicTotalProfit==='function')updatePublicTotalProfit();}
+function persist(){save('works',works);save('money',money);save('staff',staff);save('settings',settings);save('requests',requests);try{refresh();}catch(e){console.error('Dashboard refresh error:',e);czShowCloudStatus('Data saved on this device, but the display refresh had an error: '+(e?.message||e),true);}try{if($('workRows'))renderWork();if($('customerRows'))renderCustomers();if($('moneyRows'))renderMoney();if($('staffRows'))renderStaff();if($('requestRows'))renderRequests();}catch(e){console.error('List refresh error:',e);}if(typeof updatePublicTotalProfit==='function')updatePublicTotalProfit();}
 function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function n(v){return Number(v)||0} function ru(v){return '₹'+n(v).toLocaleString('en-IN',{maximumFractionDigits:2})}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -557,6 +557,8 @@ updatePublicTotalProfit();
 // Refresh the public aggregate when the visitor returns to the page.
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)updatePublicTotalProfit();});
 window.addEventListener('focus',updatePublicTotalProfit);
+// Retry the public aggregate periodically so a slow first request does not leave the login overview at zero.
+setInterval(()=>{if(!document.hidden)updatePublicTotalProfit();},30000);
 
 // Public reviews are stored locally on this device; no database/security settings are changed.
 (function(){
