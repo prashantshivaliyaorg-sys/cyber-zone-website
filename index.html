@@ -57,6 +57,17 @@ body.cz-authenticated .app{display:grid!important}
 #publicRegistrationOpen::after { content:' ★'; }
 #publicRegistrationOpen:focus-visible { outline:3px solid #222; outline-offset:3px; }
 @media (prefers-reduced-motion: reduce) { #publicRegistrationOpen { animation:none !important; } }
+#loginScreen{align-content:center;gap:16px!important}
+#loginServices,#loginScreen>div:not(#loginServices){box-shadow:0 16px 42px rgba(22,45,80,.10)!important}
+.cz-chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cz-chart-item{min-width:0;padding:11px;background:#fff;border:1px solid #e5ebf4;border-radius:11px}
+.cz-chart-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-size:12px;color:#475467}
+.cz-chart-top b{font-size:13px;color:#152746;text-align:right;overflow-wrap:anywhere}
+.cz-chart-track{height:7px;margin-top:10px;background:#edf1f7;border-radius:99px;overflow:hidden}
+.cz-chart-track span{display:block;height:100%;border-radius:99px;transition:width .25s ease}
+@media (orientation:portrait) and (max-width:700px){#loginScreen{align-content:flex-start;gap:12px!important;padding:12px!important}#loginServices{width:100%!important;max-height:none!important;padding:14px!important}#loginServices>div:first-of-type{grid-template-columns:repeat(2,minmax(0,1fr))!important}#loginScreen>div:not(#loginServices){width:100%!important;padding:20px!important}.cz-chart-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (orientation:landscape){#loginScreen{align-content:center;gap:14px!important;padding:12px!important}#loginServices{width:min(56%,680px)!important;max-height:88vh!important}#loginScreen>div:not(#loginServices){width:min(40%,420px)!important;max-height:88vh;overflow:auto}.cz-chart-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:380px){.cz-chart-grid{grid-template-columns:1fr}#loginServices>div:first-of-type{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 </style>
 </head>
 <body>
@@ -114,7 +125,15 @@ body.cz-authenticated .app{display:grid!important}
    <button type="button" class="cz-service-choice" data-service="Pension Online" style="display:flex;align-items:center;gap:8px;min-height:54px;text-align:left;background:#f8faff;color:#243b5a;border:1px solid #dce4ef;padding:10px;border-radius:10px"><span style="font-size:23px">👴</span><span style="font-size:13px">Pension Online</span></button>
    <button type="button" class="cz-service-choice" data-service="Other" style="display:flex;align-items:center;gap:8px;min-height:54px;text-align:left;background:#f8faff;color:#243b5a;border:1px solid #dce4ef;padding:10px;border-radius:10px"><span style="font-size:23px">➕</span><span style="font-size:13px">Other</span></button>
   </div>
-  <div style="margin-top:12px;padding:12px 14px;border:1px solid #dce4ef;border-radius:12px;background:#ecfdf3;color:#067647"><div style="font-size:13px;font-weight:600">Total Profit</div><div id="publicTotalProfit" style="font-size:24px;font-weight:800;margin-top:4px">₹0</div></div>
+  <section id="publicStatsChart" aria-label="Cyber Zone summary chart" style="margin-top:14px;padding:14px;border:1px solid #e0e7f1;border-radius:14px;background:linear-gradient(145deg,#f8fbff,#eef5ff)">
+   <h3 style="margin:0 0 12px;color:#152746;font-size:15px">Cyber Zone Overview</h3>
+   <div class="cz-chart-grid">
+    <div class="cz-chart-item"><div class="cz-chart-top"><span>👥 Total Customers</span><b id="publicTotalCustomers">0</b></div><div class="cz-chart-track"><span id="publicCustomersBar" style="width:0%;background:#175cd3"></span></div></div>
+    <div class="cz-chart-item"><div class="cz-chart-top"><span>📈 Total Profit</span><b id="publicTotalProfit">₹0</b></div><div class="cz-chart-track"><span id="publicProfitBar" style="width:0%;background:#12a56a"></span></div></div>
+    <div class="cz-chart-item"><div class="cz-chart-top"><span>🧾 Total Expenses</span><b id="publicTotalExpenses">₹0</b></div><div class="cz-chart-track"><span id="publicExpensesBar" style="width:0%;background:#f79009"></span></div></div>
+    <div class="cz-chart-item"><div class="cz-chart-top"><span>💰 Total Udhaar</span><b id="publicTotalUdhaar">₹0</b></div><div class="cz-chart-track"><span id="publicUdhaarBar" style="width:0%;background:#d92d20"></span></div></div>
+   </div>
+  </section>
  </div>
  <div style="background:white;width:min(100%,420px);border:1px solid #dce4ef;border-radius:18px;padding:24px;box-shadow:0 12px 40px #13294b18">
   <button type="button" id="publicRegistrationOpen" style="width:100%;padding:12px;margin-bottom:18px;border:0;border-radius:9px;background:#087f5b;color:white;font-weight:700;cursor:pointer">NEW SERVICE REGISTRATION</button>
@@ -201,22 +220,10 @@ body.cz-authenticated .app{display:grid!important}
   <section id="page-customers" class="hidden"><div class="panel"><div class="panel-head"><h2>Customer List</h2></div><div class="toolbar"><input id="customerSearch" placeholder="Customer Name   " oninput="renderCustomers()"></div><div class="table-wrap"><table><thead><tr><th>Customer</th><th></th><th>Total Work</th><th> Charge</th><th>Amount Received</th><th>Outstanding Balance</th><th>Work Status</th></tr></thead><tbody id="customerRows"></tbody></table></div></div></section>
 
   <section id="page-expenses" class="hidden">
-<div class="panel" id="staffCommissionSettings">
- <div class="panel-head"><h2>Staff Commission Settings</h2></div>
- <p>Set the default commission percentage for new work. You can change it whenever needed.</p>
- <div class="formgrid">
-  <div class="field"><label for="defaultStaffCommissionPct">Default Staff Commission (%)</label><input id="defaultStaffCommissionPct" type="number" min="0" max="100" step="0.1" value="0"></div>
-  <div class="field"><label for="commissionBase">Commission calculated on</label><select id="commissionBase"><option value="charge">Total Work Charge</option><option value="profit">Profit After Work Cost</option></select></div>
-  <div class="wide"><button type="button" onclick="saveDefaultStaffCommission()">Save Commission Settings</button></div>
- </div>
- <p class="muted">Existing work records are not changed automatically. The selected percentage is used when adding new work.</p>
-</div>
-
-
 <div class="panel"><div class="panel-head"><h2> / Cost  </h2></div><form id="moneyForm"><div class="formgrid">
-    <div class="field"><label></label><select id="moneyType"><option value="expense">Expenses</option></select></div>
+    <div class="field"><label></label><select id="moneyType"><option value="expense">Cost</option><option value="income">Other Income</option></select></div>
     <div class="field"><label>Date</label><input type="date" id="moneyDate" required></div>
-    <div class="field"><label>Category</label><select id="moneyCategory"><option>Paper/Printing</option><option></option><option>Electricity</option><option>Stationery</option><option>Staff Salary</option><option>Travel</option><option>Other Cost</option></select></div>
+    <div class="field"><label>Category</label><select id="moneyCategory"><option>Paper/Printing</option><option></option><option>Electricity</option><option>Stationery</option><option>Staff Salary</option><option>Travel</option><option>Other Income</option><option>Other Cost</option></select></div>
     <div class="field"><label> (₹)</label><input type="number" id="moneyAmount" min="0.01" step="0.01" required></div>
     <div class="field wide"><label></label><input id="moneyNote" placeholder=" Cost/ "></div>
     <div class="wide"><button type="submit">  </button></div>
@@ -388,7 +395,7 @@ function renderCommissionSummary(){
  (rows.length?`<div class="table-wrap wide"><table><thead><tr><th>Staff Name</th><th>Work Count</th><th>Commission This Month</th><th>Profit After Commission</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(x.name)}</td><td>${x.works}</td><td>${ru(x.commission)}</td><td>${ru(x.profit)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="muted">No staff work recorded this month.</p>');
 }
 
-function renderWork(){renderCommissionSummary();const q=($('workSearch').value||'').toLowerCase(),f=$('statusFilter').value;const list=visibleWorks().filter(w=>(!f||w.status===f)&&[w.name,w.phone,w.task,w.ref].join(' ').toLowerCase().includes(q));$('workRows').innerHTML=list.map(w=>`<tr><td>${esc(w.date)}</td><td><b>${esc(w.name||'-')}</b><br><span class="muted">${esc(w.phone||'')}</span></td><td>${esc(w.task)}${w.ref?'<br><span class="muted">'+esc(w.ref)+'</span>':''}</td><td>${ru(w.charge)}</td><td>${ru(w.paid)}</td><td>${ru(w.charge-w.paid)}</td><td>${ru(w.cost)}</td><td>${ru(w.commission||0)}</td><td>${ru(n(w.charge)-n(w.cost)-n(w.commission))}</td><td>${ru(w.udhaarDone==='Yes'?0:(w.udhaar||0))}<br>${w.udhaarDone==='Yes'?'<small>Paid</small>':`<button class="secondary mini" onclick="markUdhaarDone('${w.id}')">Mark Paid</button>`}</td><td>${badge(w.status)}</td><td><button class="secondary mini" onclick="editWork('${w.id}')">Edit</button> <button class="secondary mini" onclick="askStatusSMS(works.find(x=>x.id==='${w.id}'))">SMS</button> ${w.status!=='Completed'?`<button class="mini" style="background:#12a56a" onclick="markComplete('${w.id}')">✓ Complete</button>`:''} <button class="danger mini" onclick="deleteWork('${w.id}')">Delete</button></td></tr>`).join('')||'<tr><td colspan="12" class="empty">No work added yet. Click “Add Work”.</td></tr>'}
+function renderWork(){const q=($('workSearch').value||'').toLowerCase(),f=$('statusFilter').value;const list=visibleWorks().filter(w=>(!f||w.status===f)&&[w.name,w.phone,w.task,w.ref].join(' ').toLowerCase().includes(q));$('workRows').innerHTML=list.map(w=>`<tr><td>${esc(w.date)}</td><td><b>${esc(w.name||'-')}</b><br><span class="muted">${esc(w.phone||'')}</span></td><td>${esc(w.task)}${w.ref?'<br><span class="muted">'+esc(w.ref)+'</span>':''}</td><td>${ru(w.charge)}</td><td>${ru(w.paid)}</td><td>${ru(w.charge-w.paid)}</td><td>${ru(w.cost)}</td><td>${ru(w.commission||0)}</td><td>${ru(n(w.charge)-n(w.cost)-n(w.commission))}</td><td>${ru(w.udhaarDone==='Yes'?0:(w.udhaar||0))}<br>${w.udhaarDone==='Yes'?'<small>Paid</small>':`<button class="secondary mini" onclick="markUdhaarDone('${w.id}')">Mark Paid</button>`}</td><td>${badge(w.status)}</td><td><button class="secondary mini" onclick="editWork('${w.id}')">Edit</button> <button class="secondary mini" onclick="askStatusSMS(works.find(x=>x.id==='${w.id}'))">SMS</button> ${w.status!=='Completed'?`<button class="mini" style="background:#12a56a" onclick="markComplete('${w.id}')">✓ Complete</button>`:''} <button class="danger mini" onclick="deleteWork('${w.id}')">Delete</button></td></tr>`).join('')||'<tr><td colspan="12" class="empty">No work added yet. Click “Add Work”.</td></tr>'}
 function renderCustomers(){const q=($('customerSearch').value||'').toLowerCase(),map={};works.forEach(w=>{const k=w.phone||w.name;if(!map[k])map[k]={name:w.name,phone:w.phone,count:0,charge:0,paid:0,dues:[],statuses:[]};let c=map[k];c.count++;c.charge+=w.charge;c.paid+=w.paid;c.dues.push(w.charge-w.paid);c.statuses.push(w.status)});$('customerRows').innerHTML=Object.values(map).filter(c=>(c.name+' '+c.phone).toLowerCase().includes(q)).map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.phone)}</td><td>${c.count}</td><td>${ru(c.charge)}</td><td>${ru(c.paid)}</td><td>${ru(c.charge-c.paid)}</td><td>${esc([...new Set(c.statuses)].join(', '))}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">Customer data will appear when work is added.</td></tr>'}
 $('moneyForm').addEventListener('submit',e=>{e.preventDefault();money.unshift({id:id(),type:$('moneyType').value,date:$('moneyDate').value||today(),category:$('moneyCategory').value,amount:n($('moneyAmount').value),note:$('moneyNote').value.trim()});save('money',money);$('moneyForm').reset();$('moneyDate').value=today();refresh()});
 function renderMoney(){$('moneyRows').innerHTML=money.map(m=>`<tr><td>${esc(m.date)}</td><td>${m.type==='expense'?'Cost':''}</td><td>${esc(m.category)}</td><td>${esc(m.note)}</td><td>${ru(m.amount)}</td><td><button class="danger mini" onclick="deleteMoney('${m.id}')">Delete</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty"> /Cost    </td></tr>'}
@@ -474,10 +481,19 @@ function renderRequests(){
 function setRequestStatus(idv,status){const r=requests.find(x=>x.id===idv);if(!r)return;r.status=status;save('requests',requests);renderRequests();alert('Request status set to '+status+'   ')}
 function updatePublicTotalProfit(){
  try {
-  const raw=JSON.parse(localStorage.getItem('cz_works')||'[]');
-  const total=Array.isArray(raw)?raw.reduce((sum,w)=>sum+(Number(w.charge)||0)-(Number(w.cost)||0)-(Number(w.commission)||0),0):0;
-  const el=document.getElementById('publicTotalProfit');if(el)el.textContent=ru(total);
- } catch(e) { const el=document.getElementById('publicTotalProfit');if(el)el.textContent='₹0'; }
+  const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem('cz_'+key)||'null')??fallback}catch(e){return fallback}};
+  const worksData=read('works',[]), moneyData=read('money',[]);
+  const ws=Array.isArray(worksData)?worksData:[], ms=Array.isArray(moneyData)?moneyData:[];
+  const customers=new Set(ws.map(w=>String(w.phone||w.name||'').trim()).filter(Boolean)).size;
+  const expenses=ws.reduce((sum,w)=>sum+(Number(w.cost)||0),0)+ms.reduce((sum,m)=>sum,(ms.filter(m=>m.type==='expense').reduce((sum,m)=>sum+(Number(m.amount)||0),0)));
+  const profit=ws.reduce((sum,w)=>sum+(Number(w.charge)||0)-(Number(w.cost)||0)-(Number(w.commission)||0),0);
+  const udhaar=ws.reduce((sum,w)=>sum+(w.udhaarDone==='Yes'?0:(Number(w.udhaar)||0)),0);
+  const moneyMax=Math.max(Math.abs(profit),Math.abs(expenses),Math.abs(udhaar),1);
+  const put=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+  const bar=(id,value,max)=>{const el=document.getElementById(id);if(el)el.style.width=Math.max(0,Math.min(100,max?Math.abs(value)/max*100:0))+'%';};
+  put('publicTotalCustomers',String(customers)); put('publicTotalProfit',ru(profit)); put('publicTotalExpenses',ru(expenses)); put('publicTotalUdhaar',ru(udhaar));
+  bar('publicCustomersBar',customers,Math.max(customers,1)); bar('publicProfitBar',profit,moneyMax); bar('publicExpensesBar',expenses,moneyMax); bar('publicUdhaarBar',udhaar,moneyMax);
+ } catch(e) { console.warn('Could not update public overview chart',e); }
 }
 updatePublicTotalProfit();
 document.querySelector('.app').style.display='none';$('loginScreen').style.display='flex';$('publicServicePage').style.display='none';
