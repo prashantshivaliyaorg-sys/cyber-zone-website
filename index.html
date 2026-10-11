@@ -323,19 +323,29 @@ $('loginBtn').addEventListener('click', async ()=>{
    }
    const actualRole='Management';
    localStorage.setItem('cz_logged_role',actualRole); localStorage.setItem('cz_logged_user',user.email||email); localStorage.setItem('cz_login_alias',loginId);
-   // Show the dashboard only after authentication succeeds. Cloud-sync failure must not leave a blank white screen.
-   try {
-     await czCloudLoad(ownerId);
-     czShowCloudStatus('Cloud sync connected.');
-   } catch(cloudError) {
-     console.error('Cloud load failed after login:', cloudError);
-     czCloudReady=false;
-     czShowCloudStatus('Logged in, but cloud sync failed: '+String(cloudError?.message||cloudError)+'. Local browser data is shown; check Supabase table permissions.', true);
-   }
+   // Reveal the dashboard immediately after authentication; cloud sync runs afterward
+   // so a slow or unavailable database cannot leave the user on a blank screen.
    document.body.classList.add('cz-authenticated');
    const gate=$('loginScreen'),pub=$('publicServicePage'),app=document.querySelector('.app');
    if(gate)gate.style.display='none'; if(pub)pub.style.display='none'; if(app){app.classList.remove('hidden');app.style.display='grid';}
-   applyRoleView(); refresh(); if(err)err.textContent='';
+   if(err)err.textContent='';
+   try { applyRoleView(); refresh(); }
+   catch(renderError) {
+     console.error('Dashboard render failed after login:', renderError);
+     if(err)err.textContent='Login successful, but the dashboard could not load. Refresh the page and try again.';
+     if(gate)gate.style.display='flex';
+     if(app)app.style.display='none';
+     document.body.classList.remove('cz-authenticated');
+     return;
+   }
+   czCloudLoad(ownerId).then(()=>{
+     czShowCloudStatus('Cloud sync connected.');
+   }).catch(cloudError=>{
+     console.error('Cloud load failed after login:', cloudError);
+     czCloudReady=false;
+     czShowCloudStatus('Logged in, but cloud sync failed: '+String(cloudError?.message||cloudError)+'. Local browser data is shown; check Supabase table permissions.', true);
+   });
+
  } catch(e) {
    // Keep the login screen visible for authentication/authorization errors.
    document.body.classList.remove('cz-authenticated');
