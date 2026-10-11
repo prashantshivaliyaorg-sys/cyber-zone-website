@@ -41,6 +41,14 @@ input:focus,select:focus,textarea:focus{outline:2px solid #175cd3;outline-offset
 /* Auth screen isolation: never show the management dashboard behind public registration or login. */
 body:not(.cz-authenticated) .app{display:none!important}
 body.cz-authenticated .app{display:grid!important}
+
+.cz-public-chart-layout{display:grid;grid-template-columns:minmax(150px,1fr) minmax(150px,1fr);align-items:center;gap:14px}
+.cz-public-pie{width:min(100%,230px);aspect-ratio:1;border-radius:50%;margin:auto;background:conic-gradient(#123a63 0deg 90deg,#50c9c8 90deg 180deg,#f6b73c 180deg 270deg,#f05a28 270deg 360deg);position:relative;box-shadow:inset 0 0 0 1px #ffffff80}
+.cz-public-pie:after{content:'Overview';position:absolute;inset:27%;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;color:#152746;font-size:13px;box-shadow:0 2px 12px #15274618}
+.cz-public-legend{display:grid;gap:9px}.cz-public-legend-row{display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:center;font-size:13px;color:#344054}.cz-public-dot{width:11px;height:11px;border-radius:50%}.cz-public-legend-row b{color:#152746;text-align:right;overflow-wrap:anywhere}
+.cz-review-box{margin-top:14px;padding:14px;background:#fff;border:1px solid #e0e7f1;border-radius:14px}.cz-stars{display:flex;gap:6px;margin:8px 0 12px}.cz-star-btn{border:0;background:transparent;color:#c7ced8;font-size:28px;padding:0 2px;cursor:pointer}.cz-star-btn.selected{color:#f5b301}.cz-review-list{display:grid;gap:8px;margin-top:10px}.cz-review-item{padding:9px 11px;border-radius:9px;background:#f8fafc;border:1px solid #e5ebf4;font-size:13px}.cz-review-item .stars{color:#f5b301;letter-spacing:1px}
+@media(max-width:420px){.cz-public-chart-layout{grid-template-columns:1fr}.cz-public-pie{width:160px}.cz-public-legend{gap:7px}}
+
 </style>
 
 <style id="yellowServiceRegistrationStyle">
@@ -104,7 +112,7 @@ body.cz-authenticated .app{display:grid!important}
 
 <div id="loginScreen" style="position:fixed;inset:0;z-index:9999;background:#eef3fb;display:flex;align-items:center;justify-content:center;gap:18px;padding:18px;flex-wrap:wrap;overflow:auto">
  <div id="loginServices" style="background:white;width:min(100%,560px);max-height:78vh;overflow:auto;border:1px solid #dce4ef;border-radius:18px;padding:20px;box-shadow:0 12px 40px #13294b18">
-  <h2 style="margin:0 0 5px;color:#152746">Our Services</h2><p style="color:#667085;margin:0 0 14px;font-size:13px">Click any service to open its registration form.</p>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px"><h2 style="margin:0;color:#152746">Our Services</h2><button type="button" id="publicRegistrationOpen" style="width:auto;padding:10px 13px;margin:0;border:0;border-radius:9px;background:#087f5b;color:white;font-weight:700;cursor:pointer">NEW SERVICE REGISTRATION</button></div><p style="color:#667085;margin:0 0 14px;font-size:13px">Click any service to open its registration form.</p>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px">
    <button type="button" class="cz-service-choice" data-service="Udyam Registration" style="display:flex;align-items:center;gap:8px;min-height:54px;text-align:left;background:#f8faff;color:#243b5a;border:1px solid #dce4ef;padding:10px;border-radius:10px"><span style="font-size:23px">🏢</span><span style="font-size:13px">Udyam Registration</span></button>
    <button type="button" class="cz-service-choice" data-service="Income Certificate" style="display:flex;align-items:center;gap:8px;min-height:54px;text-align:left;background:#f8faff;color:#243b5a;border:1px solid #dce4ef;padding:10px;border-radius:10px"><span style="font-size:23px">📄</span><span style="font-size:13px">Income Certificate</span></button>
@@ -126,17 +134,27 @@ body.cz-authenticated .app{display:grid!important}
    <button type="button" class="cz-service-choice" data-service="Other" style="display:flex;align-items:center;gap:8px;min-height:54px;text-align:left;background:#f8faff;color:#243b5a;border:1px solid #dce4ef;padding:10px;border-radius:10px"><span style="font-size:23px">➕</span><span style="font-size:13px">Other</span></button>
   </div>
   <section id="publicStatsChart" aria-label="Cyber Zone summary chart" style="margin-top:14px;padding:14px;border:1px solid #e0e7f1;border-radius:14px;background:linear-gradient(145deg,#f8fbff,#eef5ff)">
-   <h3 style="margin:0 0 12px;color:#152746;font-size:15px">Cyber Zone Overview</h3>
-   <div class="cz-chart-grid">
-    <div class="cz-chart-item"><div class="cz-chart-top"><span>👥 Total Customers</span><b id="publicTotalCustomers">0</b></div><div class="cz-chart-track"><span id="publicCustomersBar" style="width:0%;background:#175cd3"></span></div></div>
-    <div class="cz-chart-item"><div class="cz-chart-top"><span>📈 Total Profit</span><b id="publicTotalProfit">₹0</b></div><div class="cz-chart-track"><span id="publicProfitBar" style="width:0%;background:#12a56a"></span></div></div>
-    <div class="cz-chart-item"><div class="cz-chart-top"><span>🧾 Total Expenses</span><b id="publicTotalExpenses">₹0</b></div><div class="cz-chart-track"><span id="publicExpensesBar" style="width:0%;background:#f79009"></span></div></div>
-    <div class="cz-chart-item"><div class="cz-chart-top"><span>💰 Total Udhaar</span><b id="publicTotalUdhaar">₹0</b></div><div class="cz-chart-track"><span id="publicUdhaarBar" style="width:0%;background:#d92d20"></span></div></div>
+   <h3 style="margin:0 0 12px;color:#152746;font-size:16px">Cyber Zone Overview</h3>
+   <div class="cz-public-chart-layout">
+    <div id="publicPieChart" class="cz-public-pie" role="img" aria-label="Summary pie chart"></div>
+    <div class="cz-public-legend">
+     <div class="cz-public-legend-row"><span class="cz-public-dot" style="background:#123a63"></span><span>👥 Total Customers</span><b id="publicTotalCustomers">0</b></div>
+     <div class="cz-public-legend-row"><span class="cz-public-dot" style="background:#50c9c8"></span><span>📈 Total Profit</span><b id="publicTotalProfit">₹0</b></div>
+     <div class="cz-public-legend-row"><span class="cz-public-dot" style="background:#f6b73c"></span><span>🧾 Total Expenses</span><b id="publicTotalExpenses">₹0</b></div>
+     <div class="cz-public-legend-row"><span class="cz-public-dot" style="background:#f05a28"></span><span>💰 Total Udhaar</span><b id="publicTotalUdhaar">₹0</b></div>
+    </div>
    </div>
+   <p style="font-size:11px;color:#667085;margin:10px 0 0">Values refresh from data available in this browser.</p>
+  </section>
+  <section class="cz-review-box" id="publicReviewSection">
+   <h3 style="margin:0;color:#152746;font-size:16px">Rate & Review Cyber Zone</h3><p style="margin:5px 0;color:#667085;font-size:13px">Tell us about your experience.</p>
+   <form id="publicReviewForm"><label for="publicReviewName" style="font-size:13px">Your name (optional)</label><input id="publicReviewName" maxlength="60" placeholder="Enter your name" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px;margin:5px 0 8px">
+   <div style="font-size:13px">Your rating</div><div class="cz-stars" id="publicStarPicker" role="radiogroup" aria-label="Choose rating"> <button class="cz-star-btn" type="button" data-rating="1" aria-label="1 star">★</button><button class="cz-star-btn" type="button" data-rating="2" aria-label="2 stars">★</button><button class="cz-star-btn" type="button" data-rating="3" aria-label="3 stars">★</button><button class="cz-star-btn" type="button" data-rating="4" aria-label="4 stars">★</button><button class="cz-star-btn" type="button" data-rating="5" aria-label="5 stars">★</button></div>
+   <label for="publicReviewText" style="font-size:13px">Review</label><textarea id="publicReviewText" rows="3" maxlength="500" placeholder="Write your review" style="width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px;margin:5px 0 10px"></textarea><button type="submit" style="width:100%;padding:11px;border:0;border-radius:8px;background:#175cd3;color:white;font-weight:700">Submit Rating</button><div id="publicReviewMessage" style="font-size:13px;margin-top:8px" aria-live="polite"></div></form>
+   <div id="publicReviewList" class="cz-review-list"></div>
   </section>
  </div>
  <div style="background:white;width:min(100%,420px);border:1px solid #dce4ef;border-radius:18px;padding:24px;box-shadow:0 12px 40px #13294b18">
-  <button type="button" id="publicRegistrationOpen" style="width:100%;padding:12px;margin-bottom:18px;border:0;border-radius:9px;background:#087f5b;color:white;font-weight:700;cursor:pointer">NEW SERVICE REGISTRATION</button>
   <h2 style="margin:0 0 5px;color:#152746">Cyber Zone Login</h2>
   <p style="color:#667085;margin:0 0 18px;font-size:14px">Select Management or Staff and enter your own ID and password.</p>
   <label style="display:block;font-size:13px;margin-bottom:6px">User ID / Mobile Number</label>
@@ -221,9 +239,9 @@ body.cz-authenticated .app{display:grid!important}
 
   <section id="page-expenses" class="hidden">
 <div class="panel"><div class="panel-head"><h2> / Cost  </h2></div><form id="moneyForm"><div class="formgrid">
-    <div class="field"><label></label><select id="moneyType"><option value="expense">Cost</option><option value="income">Other Income</option></select></div>
+    <div class="field"><label></label><select id="moneyType"><option value="expense">Expense</option></select></div>
     <div class="field"><label>Date</label><input type="date" id="moneyDate" required></div>
-    <div class="field"><label>Category</label><select id="moneyCategory"><option>Paper/Printing</option><option></option><option>Electricity</option><option>Stationery</option><option>Staff Salary</option><option>Travel</option><option>Other Income</option><option>Other Cost</option></select></div>
+    <div class="field"><label>Category</label><select id="moneyCategory"><option>Paper / Printing</option><option>Internet / Recharge</option><option>Electricity</option><option>Stationery</option><option>Staff Salary</option><option>Travel</option><option>Rent</option><option>Repair / Maintenance</option><option>Equipment</option><option>Other Expense</option></select></div>
     <div class="field"><label> (₹)</label><input type="number" id="moneyAmount" min="0.01" step="0.01" required></div>
     <div class="field wide"><label></label><input id="moneyNote" placeholder=" Cost/ "></div>
     <div class="wide"><button type="submit">  </button></div>
@@ -482,20 +500,39 @@ function setRequestStatus(idv,status){const r=requests.find(x=>x.id===idv);if(!r
 function updatePublicTotalProfit(){
  try {
   const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem('cz_'+key)||'null')??fallback}catch(e){return fallback}};
-  const worksData=read('works',[]), moneyData=read('money',[]);
-  const ws=Array.isArray(worksData)?worksData:[], ms=Array.isArray(moneyData)?moneyData:[];
-  const customers=new Set(ws.map(w=>String(w.phone||w.name||'').trim()).filter(Boolean)).size;
-  const expenses=ws.reduce((sum,w)=>sum+(Number(w.cost)||0),0)+ms.reduce((sum,m)=>sum,(ms.filter(m=>m.type==='expense').reduce((sum,m)=>sum+(Number(m.amount)||0),0)));
-  const profit=ws.reduce((sum,w)=>sum+(Number(w.charge)||0)-(Number(w.cost)||0)-(Number(w.commission)||0),0);
+  const worksData=read('works',[]), moneyData=read('money',[]), customerData=read('customers',[]);
+  const ws=Array.isArray(worksData)?worksData:[], ms=Array.isArray(moneyData)?moneyData:[], cs=Array.isArray(customerData)?customerData:[];
+  const customerKeys=new Set();
+  cs.forEach(c=>{const k=String(c.phone||c.mobile||c.name||c.id||'').trim().toLowerCase();if(k)customerKeys.add(k)});
+  ws.forEach(w=>{const k=String(w.phone||w.name||'').trim().toLowerCase();if(k)customerKeys.add(k)});
+  const customers=customerKeys.size;
+  const workCosts=ws.reduce((sum,w)=>sum+(Number(w.cost)||0),0);
+  const extraExpenses=ms.filter(m=>m.type==='expense').reduce((sum,m)=>sum+(Number(m.amount)||0),0);
+  const otherIncome=ms.filter(m=>m.type==='income').reduce((sum,m)=>sum+(Number(m.amount)||0),0);
+  const expenses=workCosts+extraExpenses;
+  const profit=ws.reduce((sum,w)=>sum+(Number(w.charge)||0)-(Number(w.cost)||0)-(Number(w.commission)||0),0)+otherIncome;
   const udhaar=ws.reduce((sum,w)=>sum+(w.udhaarDone==='Yes'?0:(Number(w.udhaar)||0)),0);
-  const moneyMax=Math.max(Math.abs(profit),Math.abs(expenses),Math.abs(udhaar),1);
   const put=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
-  const bar=(id,value,max)=>{const el=document.getElementById(id);if(el)el.style.width=Math.max(0,Math.min(100,max?Math.abs(value)/max*100:0))+'%';};
-  put('publicTotalCustomers',String(customers)); put('publicTotalProfit',ru(profit)); put('publicTotalExpenses',ru(expenses)); put('publicTotalUdhaar',ru(udhaar));
-  bar('publicCustomersBar',customers,Math.max(customers,1)); bar('publicProfitBar',profit,moneyMax); bar('publicExpensesBar',expenses,moneyMax); bar('publicUdhaarBar',udhaar,moneyMax);
+  put('publicTotalCustomers',String(customers));put('publicTotalProfit',ru(profit));put('publicTotalExpenses',ru(expenses));put('publicTotalUdhaar',ru(udhaar));
+  // Pie segments are normalized only for visual display; values remain explicitly labelled in the legend.
+  const pie=document.getElementById('publicPieChart');
+  if(pie){const vals=[Math.max(0,customers),Math.max(0,profit),Math.max(0,expenses),Math.max(0,udhaar)];const total=vals.reduce((a,b)=>a+b,0);if(total>0){let at=0;const colors=['#123a63','#50c9c8','#f6b73c','#f05a28'];const stops=vals.map((v,i)=>{const a=at;at+=v/total*360;return `${colors[i]} ${a}deg ${at}deg`});pie.style.background=`conic-gradient(${stops.join(',')})`}else pie.style.background='conic-gradient(#d9e2ef 0deg 360deg)';}
  } catch(e) { console.warn('Could not update public overview chart',e); }
 }
+
 updatePublicTotalProfit();
+
+// Public reviews are stored locally on this device; no database/security settings are changed.
+(function(){
+ let rating=0;const stars=[...document.querySelectorAll('#publicStarPicker .cz-star-btn')];
+ function paint(){stars.forEach(b=>{const active=Number(b.dataset.rating)<=rating;b.classList.toggle('selected',active);b.setAttribute('aria-checked',String(Number(b.dataset.rating)===rating));});}
+ stars.forEach(b=>b.addEventListener('click',()=>{rating=Number(b.dataset.rating);paint()}));
+ const escapeReview=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function renderReviews(){let arr=[];try{arr=JSON.parse(localStorage.getItem('cz_public_reviews')||'[]')}catch(e){}const box=document.getElementById('publicReviewList');if(!box)return;box.innerHTML=arr.slice(-5).reverse().map(r=>`<div class="cz-review-item"><div class="stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)} <span style="color:#344054">${escapeReview(r.name||'Customer')}</span></div><div>${escapeReview(r.text)}</div></div>`).join('');}
+ const form=document.getElementById('publicReviewForm');if(form)form.addEventListener('submit',e=>{e.preventDefault();const msg=document.getElementById('publicReviewMessage');const text=document.getElementById('publicReviewText').value.trim();if(!rating){msg.style.color='#b42318';msg.textContent='Please select a star rating.';return}if(!text){msg.style.color='#b42318';msg.textContent='Please write a short review.';return}let arr=[];try{arr=JSON.parse(localStorage.getItem('cz_public_reviews')||'[]')}catch(e){}arr.push({name:document.getElementById('publicReviewName').value.trim(),rating,text,createdAt:new Date().toISOString()});try{localStorage.setItem('cz_public_reviews',JSON.stringify(arr.slice(-50)));msg.style.color='#067647';msg.textContent='Thank you! Your rating has been saved on this device.';form.reset();rating=0;paint();renderReviews()}catch(err){msg.style.color='#b42318';msg.textContent='Could not save the review on this device.'}});
+ renderReviews();
+})();
+
 document.querySelector('.app').style.display='none';$('loginScreen').style.display='flex';$('publicServicePage').style.display='none';
 $('staffLoginOpen')?.addEventListener('click',()=>{$('publicServicePage').style.display='none';$('loginScreen').style.display='flex';});
 
