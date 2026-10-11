@@ -157,8 +157,8 @@ body.cz-authenticated .app{display:grid!important}
  <div style="background:white;width:min(100%,420px);border:1px solid #dce4ef;border-radius:18px;padding:24px;box-shadow:0 12px 40px #13294b18">
   <h2 style="margin:0 0 5px;color:#152746">Cyber Zone Login</h2>
   <p style="color:#667085;margin:0 0 18px;font-size:14px">Select Management or Staff and enter your own ID and password.</p>
-  <label style="display:block;font-size:13px;margin-bottom:6px">User ID / Mobile Number</label>
-  <input id="loginId" autocomplete="off" placeholder="Enter your Management/Staff email" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px">
+  <label style="display:block;font-size:13px;margin-bottom:6px">User ID</label>
+  <input id="loginId" autocomplete="off" placeholder="Enter your User ID" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px">
   <label style="display:block;font-size:13px;margin-bottom:6px">Password</label>
   <input id="loginPassword" type="password" autocomplete="new-password" placeholder="Enter your password" style="width:100%;padding:11px;border:1px solid #ccd5e2;border-radius:8px;margin-bottom:12px">
   <button type="button" id="loginBtn" style="width:100%;padding:12px;border:0;border-radius:8px;background:#175cd3;color:white;font-weight:700">Login </button>
@@ -400,12 +400,12 @@ function updatePendingRequired(){
  const ps=$('wUdhaarDone');if(ps){ps.value=pending?'No':(charge>0&&paid>=charge?'Yes':'');}
 }
 ['wCharge','wPaid'].forEach(idv=>{const el=$(idv);if(el){el.addEventListener('input',updatePendingRequired);el.addEventListener('change',updatePendingRequired);}});
-const paymentStatusControl=$('wUdhaarDone');if(paymentStatusControl){paymentStatusControl.addEventListener('change',()=>{const pending=paymentStatusControl.value==='No';['wName','wPhone','wAddress'].forEach(idv=>{const el=$(idv);if(el)el.required=pending;});setTimeout(()=>{if(typeof markCompulsoryFields==='function')markCompulsoryFields();},0);});}
-$('workForm').addEventListener('submit',e=>{e.preventDefault();const charge=n($('wCharge').value),paid=n($('wPaid').value);if(paid>charge){alert('Amount Received cannot be greater than Total Charge.');return}const wid=$('workId').value;const pending=$('wUdhaarDone').value==='No'||paid<charge;if(pending&&(!$('wName').value.trim()||!$('wPhone').value.trim()||!$('wAddress').value.trim())){alert('Payment pending hai, isliye Customer Name, Mobile Number aur Address bharna zaroori hai.');return}const obj={id:wid||id(),name:$('wName').value.trim(),phone:$('wPhone').value.trim(),address:$('wAddress').value.trim(),task:$('wTask').value.trim(),ref:'',charge,paid,cost:n($('wCost').value),commission:0,udhaar:Math.max(0,charge-paid),udhaarDone:pending?'No':'Yes',status:$('wStatus').value,date:wid?(works.find(x=>x.id===wid)?.date||today()):today(),dueDate:$('wDueDate').value,staffId:'',notes:'',updated:new Date().toISOString()};if(wid){const i=works.findIndex(w=>w.id===wid);if(i>=0){const old=works[i];works[i]=obj;if(old.status!==obj.status)askStatusSMS(obj)}}else{works.unshift(obj);if(obj.status!=='Pending')askStatusSMS(obj)}persist();resetWorkForm();toggleWorkForm(false);showPage('work')});
+if($('wUdhaarDone'))$('wUdhaarDone').addEventListener('change',()=>{const pending=$('wUdhaarDone').value==='No';['wName','wPhone','wAddress'].forEach(idv=>{const el=$(idv);if(el)el.required=pending;});});
+$('workForm').addEventListener('submit',e=>{e.preventDefault();const charge=n($('wCharge').value),paid=n($('wPaid').value);if(paid>charge){alert('Amount Received cannot be greater than Total Charge.');return}const wid=$('workId').value;const pending=paid<charge||$('wUdhaarDone').value==='No';if(pending&&(!$('wName').value.trim()||!$('wPhone').value.trim()||!$('wAddress').value.trim())){alert('Payment pending hai, isliye Customer Name, Mobile Number aur Address bharna zaroori hai.');return}const obj={id:wid||id(),name:$('wName').value.trim(),phone:$('wPhone').value.trim(),address:$('wAddress').value.trim(),task:$('wTask').value.trim(),ref:'',charge,paid,cost:n($('wCost').value),commission:0,udhaar:Math.max(0,charge-paid),udhaarDone:(paid<charge||$('wUdhaarDone').value==='No')?'No':'Yes',status:$('wStatus').value,date:wid?(works.find(x=>x.id===wid)?.date||today()):today(),dueDate:$('wDueDate').value,staffId:'',notes:'',updated:new Date().toISOString()};if(wid){const i=works.findIndex(w=>w.id===wid);if(i>=0){const old=works[i];works[i]=obj;if(old.status!==obj.status)askStatusSMS(obj)}}else{works.unshift(obj);if(obj.status!=='Pending')askStatusSMS(obj)}persist();resetWorkForm();toggleWorkForm(false);showPage('work')});
 function askStatusSMS(w){if(!w.phone)return;const msg=` ${w.name}, ${w.task}   : ${w.status} ${settings.name||'Cyber Zone'}   `;if(confirm('Work      SMS    ?'))window.location.href='sms:'+encodeURIComponent(w.phone)+'?body='+encodeURIComponent(msg)}
 function editWork(idv){const w=works.find(x=>x.id===idv);if(!w)return;showPage('work');toggleWorkForm(true);populateStaff();$('workFormTitle').textContent='Edit Work';$('workId').value=w.id;$('wName').value=w.name||'';$('wPhone').value=w.phone||'';$('wAddress').value=w.address||'';$('wTask').value=w.task;$('wCharge').value=w.charge??'';$('wPaid').value=w.paid??'';$('wCost').value=w.cost||'';if($('wUdhaarDone'))$('wUdhaarDone').value=(n(w.paid)<n(w.charge))?'No':'Yes';$('wStatus').value=w.status;$('wDate').value=w.date;$('wDueDate').value=w.dueDate||'';updatePendingRequired();if($('wStaff'))$('wStaff').value=w.staffId||'';window.scrollTo({top:0,behavior:'smooth'})}
 function markComplete(idv){const w=works.find(x=>x.id===idv);if(!w)return;if(!confirm(` ${w.name}  Work Completed  ?`))return;const old=w.status;w.status='Completed';w.updated=new Date().toISOString();persist();if(old!=='Completed')askStatusSMS(w)}
-function markUdhaarDone(idv){const w=works.find(x=>x.id===idv);if(!w)return;const balance=Math.max(0,n(w.charge)-n(w.paid));if(balance<=0){w.udhaarDone='Yes';persist();return}if(confirm('Customer ka bacha hua udhaar '+ru(balance)+' received mark karein?')){w.paid=n(w.charge);w.udhaar=0;w.udhaarDone='Yes';w.udhaarPaidDate=today();w.updated=new Date().toISOString();persist()}}
+function markUdhaarDone(idv){const w=works.find(x=>x.id===idv);if(!w)return;const balance=Math.max(0,n(w.charge)-n(w.paid));if(confirm('Mark outstanding balance '+ru(balance)+' as received and paid?')){w.paid=n(w.charge);w.udhaar=0;w.udhaarDone='Yes';w.udhaarPaidDate=today();w.updated=new Date().toISOString();persist()}}
 function deleteWork(idv){if(confirm('  Work    ?')){works=works.filter(w=>w.id!==idv);persist()}}
 
 function renderCommissionSummary(){
@@ -425,7 +425,7 @@ function deleteMoney(idv){if(confirm('  ?')){money=money.filter(m=>m.id!==idv);p
 $('staffForm').addEventListener('submit',e=>{e.preventDefault();if(String($('sPassword').value||'').length<8){alert('Set a staff password of at least 8 characters.');return}staff.push({id:id(),name:$('sName').value.trim(),phone:$('sPhone').value.trim(),role:$('sRole').value.trim()||'Staff',date:$('sDate').value||today(),password:$('sPassword').value});save('staff',staff);$('staffForm').reset();$('sRole').value='Staff';persist()});
 function renderStaff(){populateStaff();if(!$('staffRows'))return;$('staffRows').innerHTML=staff.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.phone)}</td><td>${esc(s.role)}</td><td>${esc(s.date)}</td><td><button class="danger mini" onclick="deleteStaff('${s.id}')">Delete</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">No staff added yet.</td></tr>'}
 function deleteStaff(idv){if(String(localStorage.getItem('cz_logged_role')||'').toLowerCase()==='staff'){alert('Only Management can delete staff.');return;}if(confirm('Delete this staff member?')){staff=staff.filter(s=>s.id!==idv);persist()}}
-function refresh(){if(typeof updatePublicTotalProfit==='function')updatePublicTotalProfit();const all=works,ws=visibleWorks(),d=today(),todayWorks=ws.filter(w=>w.date===d),todayPaid=todayWorks.reduce((a,w)=>a+n(w.paid),0),todayCost=todayWorks.reduce((a,w)=>a+n(w.cost),0),due=ws.reduce((a,w)=>a+n(w.charge)-n(w.paid),0);$('mToday').textContent=todayWorks.length;$('mPending').textContent=ws.filter(w=>w.status==='Pending').length;$('mProcessing').textContent=ws.filter(w=>w.status==='Processing').length;$('mCompleted').textContent=ws.filter(w=>w.status==='Completed').length;$('mIncome').textContent=ru(todayPaid);$('mExpense').textContent=ru(todayCost);$('mDue').textContent=ru(due);$('mCustomers').textContent=ws.length;$('sumFees').textContent=ru(todayWorks.reduce((a,w)=>a+n(w.charge),0));$('sumPaid').textContent=ru(todayPaid);$('sumNet').textContent=ru(todayWorks.reduce((a,w)=>a+n(w.charge)-n(w.cost)-n(w.commission),0));$('recentRows').innerHTML=ws.slice(0,6).map(w=>`<tr><td>${esc(w.name||'-')}</td><td>${esc(w.task||'')}</td><td>${badge(w.status)}</td><td>${ru(n(w.charge)-n(w.paid))}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">No work recorded yet.</td></tr>';$('rWorks').textContent=ws.length;$('rCharges').textContent=ru(ws.reduce((a,w)=>a+n(w.charge),0));$('rPaid').textContent=ru(ws.reduce((a,w)=>a+n(w.paid),0));$('rDue').textContent=ru(due);$('rExpenses').textContent=ru(ws.reduce((a,w)=>a+n(w.cost),0));$('rComplete').textContent=ws.filter(w=>w.status==='Completed').length;renderWork();if(localStorage.getItem('cz_logged_role')!=='Staff'){renderCustomers();renderMoney();renderStaff();}}
+function refresh(){if(typeof updatePublicTotalProfit==='function')updatePublicTotalProfit();const all=works,ws=visibleWorks(),d=today(),todayWorks=ws.filter(w=>w.date===d),todayPaid=todayWorks.reduce((a,w)=>a+n(w.paid),0),todayCost=todayWorks.reduce((a,w)=>a+n(w.cost),0),due=ws.reduce((a,w)=>a+n(w.charge)-n(w.paid),0);$('mToday').textContent=todayWorks.length;$('mPending').textContent=ws.filter(w=>w.status==='Pending').length;$('mProcessing').textContent=ws.filter(w=>w.status==='Processing').length;$('mCompleted').textContent=ws.filter(w=>w.status==='Completed').length;$('mIncome').textContent=ru(todayPaid);$('mExpense').textContent=ru(todayCost);$('mDue').textContent=ru(due);$('mCustomers').textContent=ws.length;$('sumFees').textContent=ru(todayWorks.reduce((a,w)=>a+n(w.charge),0));$('sumPaid').textContent=ru(todayPaid);$('sumNet').textContent=ru(todayWorks.reduce((a,w)=>a+n(w.paid)-n(w.cost)-n(w.commission),0));$('recentRows').innerHTML=ws.slice(0,6).map(w=>`<tr><td>${esc(w.name||'-')}</td><td>${esc(w.task||'')}</td><td>${badge(w.status)}</td><td>${ru(n(w.charge)-n(w.paid))}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">No work recorded yet.</td></tr>';$('rWorks').textContent=ws.length;$('rCharges').textContent=ru(ws.reduce((a,w)=>a+n(w.charge),0));$('rPaid').textContent=ru(ws.reduce((a,w)=>a+n(w.paid),0));$('rDue').textContent=ru(due);$('rExpenses').textContent=ru(ws.reduce((a,w)=>a+n(w.cost),0));$('rComplete').textContent=ws.filter(w=>w.status==='Completed').length;renderWork();if(localStorage.getItem('cz_logged_role')!=='Staff'){renderCustomers();renderMoney();renderStaff();}}
 function downloadBackup(){
   try {
     // Export all Cyber Zone browser data without changing or deleting anything.
@@ -513,7 +513,7 @@ function updatePublicTotalProfit(){
   const expenses=workCosts+extraExpenses;
   // Profit uses money actually received, less work cost and commission.
   const profit=ws.reduce((sum,w)=>sum+(Number(w.paid)||0)-(Number(w.cost)||0)-(Number(w.commission)||0),0);
-  const udhaar=ws.reduce((sum,w)=>sum+Math.max(0,(Number(w.charge)||0)-(Number(w.paid)||0)),0);
+  const udhaar=ws.reduce((sum,w)=>sum+(w.udhaarDone==='Yes'?0:Math.max(0,(Number(w.charge)||0)-(Number(w.paid)||0))),0);
   const put=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
   put('publicTotalCustomers',String(customers));put('publicTotalProfit',ru(profit));put('publicTotalExpenses',ru(expenses));put('publicTotalUdhaar',ru(udhaar));
   const pie=document.getElementById('publicPieChart');
@@ -559,28 +559,28 @@ $('centerName').value=settings.name||'Cyber Zone';$('centerPhone').value=setting
 })();
 </script>
 <script>
-// Make all compulsory fields visually obvious without changing the form's existing validation.
+// Required-field star markers: one red star only; required status follows payment status.
 (function markCompulsoryFields(){
  const mark = () => {
-  document.querySelectorAll('label').forEach(label => {
-   let text=(label.textContent||'').trim();
-   const linked = label.htmlFor ? document.getElementById(label.htmlFor) : label.querySelector('input,select,textarea');
-   const isRequired = /\*/.test(text) || /\(required\)/i.test(text) || !!(linked && linked.required) || /User ID \/ Mobile Number|^Password$|Staff Password/i.test(text);
-   if(!isRequired) return;
-   // Remove any literal trailing star first, then show exactly one red star.
-   if(!label.querySelector('.required-tag')) {
-    for(const node of Array.from(label.childNodes).reverse()) {
-     if(node.nodeType===3 && node.textContent.trim()) { node.textContent=node.textContent.replace(/\s*\*\s*$/, ''); break; }
-     if(node.nodeType===1 && node.classList.contains('required-tag')) break;
-    }
-    const tag=document.createElement('span'); tag.className='required-tag'; tag.textContent='*'; label.appendChild(tag);
-   }
-   const field=label.closest('.field') || label.parentElement;
-   if(field) field.classList.add('required-field-wrap');
-   if(linked && linked.type!=='checkbox') { linked.style.border='2px solid #e5484d'; linked.style.backgroundColor='#fffafa'; linked.setAttribute('aria-required','true'); }
+  document.querySelectorAll('#workForm .field').forEach(field => {
+   const label=field.querySelector('label');
+   const control=field.querySelector('input:not([type=hidden]),select,textarea');
+   if(!label||!control)return;
+   label.querySelectorAll('.required-tag').forEach(x=>x.remove());
+   const required=!!control.required;
+   if(required){const tag=document.createElement('span');tag.className='required-tag';tag.textContent='*';label.appendChild(tag);}
+   field.classList.toggle('required-field-wrap',required);
+   control.removeAttribute('aria-required');
+   control.style.removeProperty('border');control.style.removeProperty('background-color');
+  });
+  document.querySelectorAll('label').forEach(label=>{
+   if(label.closest('#workForm'))return;
+   const txt=(label.textContent||'').trim();
+   if(!(/User ID|^Password$|Staff Password/i.test(txt)))return;
+   if(!label.querySelector('.required-tag')){const tag=document.createElement('span');tag.className='required-tag';tag.textContent='*';label.appendChild(tag);}
   });
  };
- if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mark); else mark();
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mark);else mark();
  const form=document.getElementById('workForm');if(form){form.addEventListener('input',()=>setTimeout(mark,0));form.addEventListener('change',()=>setTimeout(mark,0));}
 })();
 </script>
