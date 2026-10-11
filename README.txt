@@ -1,1 +1,13 @@
-LOGIN/FORGOT PASSWORD REPAIR (local demo)\nManagement demo ID: 7818942933\nDefault demo password: CZadmin@123 unless changed.\nRecovery code for demo: CZ-RECOVER-2933\nStaff login: use the registered mobile number or Staff ID and the password saved when adding staff. Staff password reset: choose Staff in login type, enter the registered mobile in the recovery form, use the demo recovery code, and set a new password (8+ chars).\nThis is browser-local demo authentication, not secure for public deployment. Use a server and verified OTP before real customer data. Back up current data first.\n
+CYBER ZONE: FIX FOR THE TWO REPORTED ISSUES
+
+Files:
+- index.html: updated display refresh after saving + retry for public overview
+- Cyber_Zone_Public_Overview_Fix.sql: required server-side aggregate function for public login-page overview
+
+IMPORTANT:
+1. Run the SQL file in Supabase SQL Editor and confirm it says Success. The login-page overview cannot read private records directly; it needs this aggregate RPC.
+2. Upload index.html to the root of the same GitHub repository, replacing the current index.html, then Commit Changes.
+3. Open https://cyberzone.sbs in a private/incognito window or clear site cache and test.
+4. Test adding a work/expense and confirm it appears immediately before refreshing.
+
+The HTML alone cannot make the public overview work if the SQL function is not deployed successfully. No tables or existing rows are deleted by this SQL.
