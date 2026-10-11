@@ -334,35 +334,58 @@ function czHasUsefulData(key,value){
   return Array.isArray(value) ? value.length>0 : !!(value && typeof value==='object' && Object.keys(value).length>0);
 }
 async function czCloudLoad(ownerId){
- const {data,error}=await supabaseClient.from('cz_app_state').select('state_key,state_json').eq('owner_id',ownerId);
- if(error) throw error;
- const rows=data||[];
+ const {data:authData,error:authError}=await supabaseClient.auth.getUser();
+ if(authError) throw new Error('Could not verify the signed-in account: '+authError.message);
+ const userId=authData?.user?.id;
+ if(!userId) throw new Error('Please sign in again; no active Supabase session was found.');
+ const targetOwner=String(ownerId||userId);
+ let {data,error}=await supabaseClient.from('cz_app_state').select('state_key,state_json').eq('owner_id',targetOwner);
+ if(error) throw new Error('Could not read cloud data: '+error.message);
+ let rows=data||[];
+ // Some older organization setups use the signed-in user ID as owner_id. Try that only if the membership owner query returned no visible rows.
+ if(rows.length===0 && targetOwner!==userId){
+   const fallback=await supabaseClient.from('cz_app_state').select('state_key,state_json').eq('owner_id',userId);
+   if(fallback.error) throw new Error('Could not read cloud data: '+fallback.error.message);
+   if((fallback.data||[]).length){rows=fallback.data;ownerId=userId;}
+ }
  const cloudMap=new Map(rows.filter(r=>CZ_STATE_KEYS.includes(r.state_key)).map(r=>[r.state_key,r.state_json]));
  const defaults={works:[],money:[],staff:[],settings:{name:'Cyber Zone',phone:''},requests:[]};
- // Never overwrite useful browser data with an empty cloud value. Upload local data when cloud is empty.
  czCloudReady=false;
  const toUpload=[];
+ // If Supabase returns no visible rows on a new phone, never upload blank defaults over existing cloud data.
+ // Show a useful error instead; an RLS policy can hide rows without returning a SQL error.
+ const hasAnyLocal=CZ_STATE_KEYS.some(key=>czHasUsefulData(key,load(key,defaults[key])));
+ if(rows.length===0 && !hasAnyLocal){
+   throw new Error('Supabase returned no cloud records for this account. Your saved data was not changed. Check the cz_app_state SELECT RLS policy and confirm this login has the same owner_id as the existing records.');
+ }
  for(const key of CZ_STATE_KEYS){
    const localValue=load(key,defaults[key]);
    const hasCloud=cloudMap.has(key);
    const cloudValue=cloudMap.get(key);
-   // Keep changes made while cloud loading was in progress; do not let an older cloud snapshot hide a just-saved work item.
    if(czPendingCloudState.has(key)){
      const pendingValue=czPendingCloudState.get(key);
      localStorage.setItem('cz_'+key,JSON.stringify(pendingValue));
      toUpload.push([key,pendingValue]);
      czPendingCloudState.delete(key);
-   } else if(!hasCloud || (!czHasUsefulData(key,cloudValue) && czHasUsefulData(key,localValue))){
+   } else if(hasCloud){
+     // Cloud is authoritative when a row exists; never replace it with empty local defaults.
+     if(!czHasUsefulData(key,cloudValue) && czHasUsefulData(key,localValue)){
+       localStorage.setItem('cz_'+key,JSON.stringify(localValue));
+       toUpload.push([key,localValue]);
+     } else {
+       localStorage.setItem('cz_'+key,JSON.stringify(cloudValue));
+     }
+   } else if(czHasUsefulData(key,localValue)){
      localStorage.setItem('cz_'+key,JSON.stringify(localValue));
      toUpload.push([key,localValue]);
    } else {
-     localStorage.setItem('cz_'+key,JSON.stringify(cloudValue));
+     localStorage.setItem('cz_'+key,JSON.stringify(defaults[key]));
    }
  }
  works=load('works',[]); money=load('money',[]); staff=load('staff',[]); settings=load('settings',defaults.settings); requests=load('requests',[]);
  czCloudReady=true;
  for(const [key,value] of toUpload) await czCloudSave(key,value);
- czShowCloudStatus('Cloud sync connected. Data is saved to Supabase when changes are made.');
+ czShowCloudStatus('Cloud sync connected. Loaded '+works.length+' works, '+staff.length+' staff, '+money.length+' expense records from Supabase.');
 }
 async function czCloudSave(key,value){
  const {data:authData,error:authError}=await supabaseClient.auth.getUser();
